@@ -402,8 +402,8 @@
 		var map = new google.maps.Map(document.getElementById('map'), {center:mapCenter,zoom:mapzoom});
 
 		// 呼出パラメータでマップを生成する
-		if (location.href.indexOf('#') >= 0){
-			importData(decodeURI(location.hash));
+		if (location.hash.length >= 0){
+			importData(decodeURI(location.hash.substring(1)));
 		}
 
 
