@@ -1,0 +1,392 @@
+﻿  <!--
+      createTag関数を任意のattributeの値を指定する形にする createTag(tagName, {aaa:111, bbb:222, ccc:333 ...｝)みたいな引数にする
+      searchBox 検索 スペースを入れるとOR検索で
+   -->
+
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8">
+    <title>工事一覧</title>
+    <link rel="stylesheet" type="text/css" href="http://yui.yahooapis.com/3.18.1/build/cssreset/cssreset-min.css">
+    <link href="box.css" rel="stylesheet" type="text/css">
+    <script src="koujiData.js" charset="shift_jis"></script>
+    <script src="nojimaData.js" charset="shift_jis"></script>
+    <script src="postalData.js"></script>
+    <script src="dataHandle.js"></script>
+    <script src="../postalData/postalData.js"></script>
+    <script src="../dataHandle/dataHandle.js"></script>
+</head>
+<body>
+  <div id="header">
+    <div id="title"></div>
+    <div id="search"></div>
+    <div id="hint"></div>
+  </div>
+  <div id="container">
+    <div id="main"></div>
+  </div>
+<script>
+  //=============================================================
+  // trivial functions    細々とした関数群
+  //=============================================================
+  //文字列からスペースと”。”を取り除く
+  function trimGarbage(str){
+      if (typeof str != 'string') return; //throw new Error('string型を引数にいれてください');
+      str = str.replace(/\s/g, "");
+      str = str.replace(/。/g, "");
+      return str;
+  }
+  //政令指定都市の市名を削除する
+  function trimDecreedCity(str){
+    if (typeof str != 'string') return; //throw new Error('string型を引数にいれてください');
+    str = str.replace(/横浜市/g, "");
+    return str;
+  }
+  // 複数のDivをAppendしていく
+  HTMLDivElement.prototype.appendDiv=function(){
+    if (arguments.length < 1) return this;
+    for (var i = 0; i < arguments.length; i++){
+      if (arguments[i] instanceof HTMLElement){
+        this.appendChild(arguments[i]);
+      }
+    }
+    return this;
+  }
+
+  // divを作る
+  function createDiv(strClass, strId, strInnerHTML){
+      var temp = document.createElement('div');
+      if(strId)         temp.setAttribute('id', strId);
+      if(strClass)      temp.setAttribute('class', strClass);
+      if(strInnerHTML)  temp.innerHTML = strInnerHTML;
+      return temp;
+  }
+
+  // tagを作る
+  function createTag(strTag, attributes, innerText){
+      var temp = document.createElement(strTag);
+      if(typeof attributes == 'object'){
+        Object.keys(attributes).forEach(function(k){
+          temp.setAttribute(k, attributes[k]);
+        });
+      }
+      if(innerText){ temp.innerText = innerText; }
+      return temp;
+  }
+  // 文字列にスペースがあれば、配列に変えて返す
+  function convertArrayOnHavingSpace(strText){
+      if (typeof strText != 'string') return;
+      var res = strText.search(/[\s　]/g);
+      if (Array.isArray(res)) return res;
+      return strText;
+  }
+
+  //=============================================================
+  // createCourseLine
+  //=============================================================
+  // 担当コース情報を作成する
+  function createCourseLine(tantouName, srcData){
+    // 格納用のDIVを作成
+    var course = createDiv('course', tantouName);
+    // 担当者
+    course.appendDiv(createTantouBox(tantouName, srcData));
+    // 各住所
+    srcData.getList('伝票番号', true, '担当者', tantouName, '訪問順').forEach(function(orderNum){
+      course.appendDiv(createPlaceBox(orderNum, srcData));
+    });
+    return course;
+  }
+  //=============================================================
+  // createPlaceBox
+  //=============================================================
+  // 住所情報BOX
+  function createPlaceBox(orderNum, srcData){
+    // 住所情報の整理
+    var place = srcData.getList('住所', true, '伝票番号', orderNum)[0];
+    var result = postalData.getPostalRow(place);
+    var city = trimDecreedCity(result[postalData.市区町村名]);
+    var town = result[postalData.町域名];
+    var naiyou = srcData.getList('工事名１', true, '伝票番号', orderNum)[0];
+
+    // 同じcityが続く場合は省略する  TODO 行をまたいで同じCityが続いても空白になってしまう
+    if (this.temp == city) city =" ";
+    else this.temp = city;
+    // placeBoxを生成して返す
+    return createDiv('box place', orderNum).appendDiv(
+      createDiv('headcontent', '', city),
+      createDiv('content', '', town),
+      createDiv('footcontent', '', naiyou)
+    );
+  }
+  //=============================================================
+  // createTantouBox
+  //=============================================================
+  // 担当者情報BOX
+  function createTantouBox(tantouName, srcData){
+    // 担当者情報を整理
+    var kensuu = srcData.getList('住所', true, '担当者', tantouName).length + '件';
+    // tanbouBoxを生成して返す
+    return createDiv('box tantou', tantouName ).appendDiv(
+      createDiv('headcontent', '', kensuu),
+      createDiv('content', '', tantouName)
+    );
+  }
+  //=============================================================
+  // setSearchField
+  //=============================================================
+  // サーチボックスを設置する
+  function setSearchField(idSearch, labels){
+      // フォーム部品を設置する
+      var search = document.getElementById(idSearch);
+      var search_Label = createTag('select', {id: 'search_Label'});
+      var search_Value = createTag('input', {id: 'search_Value', type:'text'});
+      
+      var search_ColorButton = createTag('button', {id: 'search_ColorButton'}, '色つけ');
+      search.appendDiv(search_Label, search_Value, search_ColorButton);
+
+      // セレクトボックスの中身をつくる
+      // var labels = ['住所', '依頼販売店', '受注番号 伝票番号', 'ユーザー名 お客様名','商品 工事名１', '配送メモ', 'JANコード', '工事名１ 工事名２ 工事名３ 工事名４'];
+      //labels.forEach(function(element){
+      //  search_Label.appendChild(createTag('option', {value: element}, element));
+      //});
+      var labels = {
+        '住所':'住所', 
+        '依頼販売店':'依頼販売店', 
+        '伝票番号':'受注番号 伝票番号', 
+        'お客様名':'ユーザー名 お客様名',
+        '商品' : '商品 色 工事名１ 工事名２ 工事名３ 工事名４', 
+        '配送メモ': '配送メモ',
+        'JANコード':'JANコード', 
+      };
+      Object.keys(labels).forEach(function(key){
+        search_Label.appendChild(createTag('option', {value: labels[key]}, key))
+      });
+      
+      // フォーカスをボタンに移す
+      search_Value.onkeydown=function(e){
+        if(e.keyCode == 13) {
+          search_ColorButton.focus();
+          e.preventDefault();
+        }
+       };
+       /*
+       // search_FilterButtonを押したとき    TODO kData nDataに依存
+       search_FilterButton.addEventListener('click', function(){
+        var orders = nData.getList('受注番号', true, search_Label.value, '*=' + search_Value.value);
+                // 条件に一致した受注番号を取得する
+        var newData = new dataHandle.ObjectArray(kData.filterRow('伝票番号', orders));
+                // 該当受注番号でデータベースを絞る
+        drawMainDiv(newData);
+                // メイン領域を作成する
+        search_Value.select();
+        search_Value.focus();
+       });
+       */
+      search_ColorButton.addEventListener('click', clickColorButton);
+  }
+  
+  // search_ColorButtonを押したとき    
+  function clickColorButton(){
+    var search_Label = document.getElementById('search_Label');
+    var search_Value = document.getElementById('search_Value');
+
+    // メイン映画を再描画
+    drawMainDiv(kData);
+    
+    // フォーカスを戻しておく
+    search_Value.select();
+    search_Value.focus();
+    
+    // 値がなければ終了
+    if(!search_Value.value) return;
+    
+    // スペース区切りで配列を取得
+    var labels = search_Label.value.replace(/　/g,' ').split(' ');
+    var values = search_Value.value.replace(/　/g,' ').split(' ');
+    
+    // 配列どれかに一致した受注番号を色づけする
+    labels.forEach(function(label){
+	    values.forEach(function(value){
+	      var orders =[]; 
+	      orders = orders.concat(nData.getList('受注番号', true, label, '*=' + value));
+	      orders = orders.concat(kData.getList('伝票番号', true, label, '*=' + value));
+	      
+	      orders.forEach(function(order){
+	        var dom = document.getElementById(order);
+	        if (dom) dom.setAttribute('style', 'background: orange;');
+	      });
+	    });
+    });
+  }
+  
+  //=============================================================
+  // setTitleField
+  //=============================================================
+  // タイトル部分の作成
+  function setTitleField(){
+    var title = document.getElementById('title');
+    title.innerText = kData.data.date + 'の予定';
+
+    title.addEventListener('click', function(){
+      var tantouList = kData.getList('担当者', true);
+      displayHintTantou(tantouList);
+    });
+  }
+
+  //=============================================================
+  // displayHintOrder
+  //=============================================================
+  // 指定した伝票番号の内容をヒントボックスに反映させる
+  function displayHintOrder(orderNum){
+    var hint = document.getElementById('hint');
+    //var aTagS = '<a target="_blank" href="https://maps.google.co.jp/maps?q=' + encodeURI(kData.getList('住所', true, '伝票番号', orderNum)[0]) + '">';
+    var aTagS =''; // '<a target="_blank" href="https://www.google.co.jp/?q=' + encodeURI(kData.getList('住所', true, '伝票番号', orderNum)[0]) + '">';
+    var aTagE =''; // '</a>';
+
+    var rows = kData.filterRow('伝票番号', orderNum).data;
+    var htmlTxt = '';
+    htmlTxt += '' + rows[0]['訪問順'] + ' お客様名:' + rows[0]['お客様名']  + '<br>';
+    htmlTxt +=  '' + rows[0]['依頼販売店'] + '伝票番号:' + rows[0]['伝票番号'] + '<br>';
+    htmlTxt += '住所:' + aTagS + rows[0]['住所'] + aTagE + '<br>';
+
+    //工事内容
+    if ( rows[0]['依頼販売店'] == '700:ﾉｼﾞﾏ（配送）' ){
+      htmlTxt += getOrderContentsNojima(orderNum);
+    }else{
+      htmlTxt += getOrderContentsSanwa(orderNum);
+    }
+    hint.innerHTML = htmlTxt;
+  }
+  // nojima伝票からの工事内容を取得
+  function getOrderContentsNojima( orderNum ){
+    var temp = '';
+    var rows = nData.filterRow('受注番号', orderNum).data;
+    if (rows.length > 0){
+      temp += '（' ;
+      temp +='販売担当:' + rows[0]['担当者'] ;
+      temp +='）';
+      temp += '残金:' + rows[0]['残金'] + '円';
+      temp += ' 『' + rows[0]['配送メモ']  + '』' + '<br>';
+      rows.forEach(function(r){
+        temp +=  '　'+ r['商品'] + r['色'];
+        temp +=  (r['数量']==1 )? '': '(' + r['数量'] + '個口' +')';
+        temp +=  '<br>';
+      });
+    }
+    return temp;
+  }
+  // koujiデータからの工事内容を取得
+  function getOrderContentsSanwa( orderNum ){
+    var temp = '';
+    temp += '工事:' + kData.getList('工事名１', true, '伝票番号', orderNum)[0] + '';
+    temp += '' + kData.getList('工事名２', true, '伝票番号', orderNum)[0] + '';
+    temp += '' + kData.getList('工事名３', true, '伝票番号', orderNum)[0] + '';
+    temp += '' + kData.getList('工事名４', true, '伝票番号', orderNum)[0] + '';
+    return temp;
+  }
+
+  //=============================================================
+  // displayHintTantou
+  //=============================================================
+  // 担当の訪問順所を一覧にして表示する
+  function displayHintTantou(tantouName){
+    var hint = document.getElementById('hint');
+    // remove elements
+    while(hint.firstChild){
+      hint.removeChild(hint.firstChild);
+    }
+
+    // テキストエリア用のテキスト取得
+    var listText =　displayHintTantou_textarea(tantouName);
+
+    // add elements
+    hint.appendDiv(
+      createTag('div', {style: 'width: 60rem;'}, '『' + tantouName + '』の予定'),
+      createTag('textarea', {id: 'placeList', rows:'5', cols: '90'}),
+      createTag('span', {id:'select', style: 'cursor:pointer;'}, '<<選択>>'),
+      createTag('a', {href: 'http://geroro.webcrow.jp/geoHandle/geoHandle.html#' + encodeURI(listText), target: '_blank'}, '地図サイト')
+    );
+    // textarea innerText
+    document.getElementById('placeList').innerHTML = listText;
+    // addEvent
+    document.getElementById('select').addEventListener('click', displayHintTantou_selectAll);
+  }
+  function displayHintTantou_textarea(tantouName){
+    var tempTxt = '';
+    tempTxt += '担当者\t訪問順\t住所\n';
+    kData.filterRow('担当者', tantouName).sortRow('訪問順').data.forEach(function(row){
+      tempTxt += row['担当者'] + '\t' + row['訪問順'] + '\t' + row['住所'] + '\n';
+    });
+    return tempTxt;
+  }
+  function displayHintTantou_selectAll(){
+    var placeList = document.getElementById('placeList');
+    placeList.focus();
+    placeList.select();
+  }
+  //=============================================================
+  // clickEventChannel
+  //=============================================================
+  // mainDIVをクリックしたときの動作 クラスによって動作を変える
+  function clickEventChannel(event){
+    var box = event.target;
+    if ( box.className.indexOf('box') == -1 ) box = event.target.parentNode;
+    if ( box.className.indexOf('box') == -1 ) return;
+    // place
+    if ( box.className.indexOf('place') != -1 ){
+      displayHintOrder(box.id);
+      return;
+    }
+    // tantou
+    if ( box.className.indexOf('tantou') != -1 ){
+      displayHintTantou(box.id);
+      return;
+    }
+  }
+  //=============================================================
+  // drawMainDiv
+  //=============================================================
+  // メイン領域を作成する
+  function drawMainDiv( baseData, hlOrders){
+    // main取得
+    var main = document.getElementById('main');
+
+    // 初期化
+    while ( main.firstChild ){
+      main.removeChild( main.firstChild );
+    }
+
+    // 各担当者ごとにコース情報を作成して追加する
+    baseData.getList('担当者', true).forEach(function(tantouName){
+        main.appendChild(createCourseLine(tantouName, baseData));
+    });
+
+    // クリックイベントを設定
+    main.addEventListener('click', clickEventChannel);
+
+  }
+
+
+  //=============================================================
+  // main
+  //=============================================================
+  // データの取込
+  var kData = new dataHandle.ObjectArray(koujiData);
+  var nData = new dataHandle.ObjectArray(nojimaData);
+
+  // タイトルに設定
+  document.getElementById('title').innerText = kData.data.date + 'の予定';
+
+  // 工事データに基づいてコース情報を作成
+  drawMainDiv(kData);
+
+  // サーチボックスを設置する 
+  setSearchField('search');
+
+  // タイトル部分の作成
+  setTitleField()
+
+</script>
+</body>
+</html>
