@@ -28,6 +28,7 @@
 	<script src="https://google-maps-utility-library-v3.googlecode.com/svn-history/r213/trunk/richmarker/src/richmarker-compiled.js"></script>
 	<!-- <script src="http://code.jquery.com/jquery-1.11.3.min.js"></script> -->
 	<script src="geoHandle.js"></script>
+	<script src="./dataHandle.js"></script>
 	<script src="../dataHandle/dataHandle.js"></script>
 </head>
 <body>
@@ -53,7 +54,6 @@
 		<input type="checkbox" id="dataChkTrim" checked="true"><label for="dataChkTrim">ゴミ文字を削除</label>
 		<input type="checkbox" id="dataChkMansion" checked="true"><label for="dataChkMansion">マンション名削除</label>
 	</div>
-
 <script>
 // -----------------------------------------------------------
 	(function(){
@@ -130,14 +130,14 @@
 			});
 
 			//　全ての担当の表示非表示を切り変える
-			tantouDiv.appendChild( createTantouSpan('SELECT ALL'));
+			tantouDiv.appendChild( createTantouSpan('すべて選択'));
 
 			// クリック時のアクションを設定する
 			tantouDiv.addEventListener('click', event_Div_TantouClick);
 		}
 		// 担当者の名前一覧のspanをつくる
 		function createTantouSpan(tantouName){
-			var span = createTag('span', {id: tantouName, class: 'tantou', selected : false});
+			var span = createTag('span', {id: tantouName, class: 'tantou selected', selected : true});
 			var styleText = 'background-color:' + getTantouCssColorText(tantouName) +';';
 			span.appendChild(createTag('span', {style: styleText}, '__'));
 			span.appendChild(document.createTextNode(tantouName));
@@ -177,13 +177,24 @@
 				t.className = 'tantou selected';
 			}
 
-			// TODO SELECT ALL 押した時のアクション
-
+			// SELECT ALL 押した時のアクション
+			toggleTantouSpanSelected();
+			
+			
+			//
+			
+			
 			// 担当者の住所リストを優先キューに入れる
 			GeoHandle.addAddress(kData.getList('住所', true, '担当者', t.id), true);
 
 			// マーカーをリフレッシュする
+			myBounds = null;
 			refleshMarker();
+		}
+		
+		//TODO SELECT ALL 押した時のアクション
+		function toggleTantouSpanSelected(){
+		
 		}
 
 		// --------------------------------------------------------------------
@@ -272,10 +283,10 @@
 						//ジオコーダ取得失敗なら終了
 						if (!result) return;
 						// マーカーが未作成なら作成
-						if (markerArr[id] == null){
-							markerArr[id] = createMarker( result, dataRow); // マーカーを作成
-							mapExpandBounds(markerArr[id]); // マップの表示領域を拡大する
-						}
+						if (markerArr[id] == null) markerArr[id] = createMarker( result, dataRow); // マーカーを作成
+						// マップの表示領域を拡大する
+						mymapExpandBounds(markerArr[id]); 
+						
 				// ------表示ONのリストに名前がなければ
 				}else {
 						// マーカーの削除
@@ -285,12 +296,12 @@
 			});
 		}
 		// 指定マーカーに合わせてマップの表示領域を拡大する
-		function mapExpandBounds(marker){
-			var curBounds = map.getBounds();
-			if (!curBounds) curBounds = new google.maps.LatLngBounds();
-			if (!curBounds.contains(marker.getPosition())){
-				curBounds.extend(marker.getPosition());
-				map.fitBounds(curBounds);
+		function mymapExpandBounds(marker){
+			//var curBounds = myBounds;
+			if (!myBounds) myBounds = new google.maps.LatLngBounds();
+			if (!myBounds.contains(marker.getPosition())){
+				myBounds.extend(marker.getPosition());
+				map.fitBounds(myBounds);
 			}
 		}
 
@@ -308,7 +319,15 @@
 			if (!data.getList('住所')) return;
 			if (!data.getList('担当者')) return;
 			if (!data.getList('訪問順')) return;
-
+			
+			// フィールド名と等しい値がある行は削除する
+			data.data = data.data.filter(function(row){
+				if (row['住所'] ==='住所') return false;
+				if (row['担当者']==='担当者') return false;
+				if (row['訪問順']==='訪問順') return false;
+				return true;
+			});
+			
 			// Trimフラグがあれば行う
 			if (isTrimGarbage){data.data.forEach(function(row){row['住所'] = trimGarbage(row['住所']);});}
 			if (isTrimMansion){data.data.forEach(function(row){row['住所'] = trimMansionOrlater(trimGarbage(row['住所']));});}
@@ -355,7 +374,7 @@
 			setTantouDiv();
 
 			// GeoHandleの初期化
-			GeoHandle.init();
+			//GeoHandle.init();			// キャッシュが消えるのでmainにて呼出
 
 			// Geocoder成功時のコールバックを設定
 			GeoHandle.onLocate = myCallBack; //マーカーの再描画
@@ -394,9 +413,15 @@
 		// マーカー配列を用意
 		var markerArr = [];
 
+		// マップの表示領域を格納する
+		var myBounds = new google.maps.LatLngBounds(); 
+
 		// マップの初期表示を定める
 		var mapCenter = {lat:35.5, lng:139.6};
 		var	mapzoom = 14;
+		
+		// geocoderキャッシュ管理オブジェクトを初期化
+		GeoHandle.init();
 
 		// googleマップの読込み
 		var map = new google.maps.Map(document.getElementById('map'), {center:mapCenter,zoom:mapzoom});
