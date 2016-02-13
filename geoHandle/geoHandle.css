@@ -42,7 +42,7 @@ body, html{
 #dataDiv{
   position:fixed;
   text-align: center;
-  top: 0px;
+  top: 10px;
   left: 200px;
   padding: 10px 10px;
   border-radius:10px;
@@ -65,6 +65,16 @@ body, html{
   font-weight:bold;
 }
 
+#searchDiv{
+  position:fixed;
+  text-align: center;
+  top: 10px;
+  left: 200px;
+  padding: 10px 10px;
+  border-radius:5px;
+  background: Honeydew;
+}
+
 @keyframes anime1{
   0%{background-color: aqua;}
   100%{background-color: white;}
@@ -75,11 +85,11 @@ body, html{
   position: relative;
   color:#fff;
   font-family: Arial, sans-serif;
-  font-size: 12px;
+  font-size: 15px;
   text-align: center;
   font-weight: bold;
   border-radius: 45%;
-  width: 30px;
+  width: 32px;
   height: 20px;
   line-height: 20px;
   box-shadow: 1px 1px 3px 0 rgba(0,0,0,0.5);
@@ -113,7 +123,7 @@ body, html{
   left: 36px;
   color:#000;
   font-family: Arial, sans-serif;
-  font-size: 8px;
+  font-size: 11px;
   margin:auto;
   text-shadow:  0 -1px 1px #FFF, -1px 0 1px #FFF, 1px 0 1px #FFF;
   height: 20px;

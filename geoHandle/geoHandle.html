@@ -46,6 +46,11 @@
 			<div id="map"></div>
 		</div>
 	</div>
+	<!-- サーチボックス -->
+	<div id="searchDiv">
+		<input type="textbox" id = "searchText" value="" size="40"><button id="searchButton">検索する</button>
+	</div>	
+	<!-- データ取込フォーム -->
 	<div id="dataDiv">
 		<div id="dataClose">×</div>
 		<span id="dataTitle">住所データを「タブ区切りのレコード」で入力</span>
@@ -54,6 +59,7 @@
 		<input type="checkbox" id="dataChkTrim" checked="true"><label for="dataChkTrim">ゴミ文字を削除</label>
 		<input type="checkbox" id="dataChkMansion" checked="true"><label for="dataChkMansion">マンション名削除</label>
 	</div>
+
 <script>
 // -----------------------------------------------------------
 	(function(){
@@ -181,14 +187,13 @@
 			toggleTantouSpanSelected();
 			
 			
-			//
-			
+			// 表示領域情報をを現在の表示と一致させる
+			myBounds = map.getBounds();
 			
 			// 担当者の住所リストを優先キューに入れる
 			GeoHandle.addAddress(kData.getList('住所', true, '担当者', t.id), true);
 
 			// マーカーをリフレッシュする
-			myBounds = null;
 			refleshMarker();
 		}
 		
@@ -273,7 +278,7 @@
 			var nowTantouArr = kData.getList('担当者', true).filter(function(tantou){
 				return document.getElementById(tantou).getAttribute('selected') == 'true';
 			});
-
+			
 			//	データの担当者一つ一つに対して
 			kData.data.forEach(function(dataRow, id){
 				// ------表示ONのリストに名前があれば
@@ -355,7 +360,6 @@
 				dataDiv.style.visibility = 'hidden';
 			}
 		}
-
 		// --------------------------------------------------------------------
 		//  init
 		// --------------------------------------------------------------------
@@ -375,6 +379,9 @@
 
 			// GeoHandleの初期化
 			//GeoHandle.init();			// キャッシュが消えるのでmainにて呼出
+			
+			// 地図の表示範囲初期化
+			myBounds = null;
 
 			// Geocoder成功時のコールバックを設定
 			GeoHandle.onLocate = myCallBack; //マーカーの再描画
