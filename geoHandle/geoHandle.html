@@ -136,7 +136,7 @@
 			});
 
 			//　全ての担当の表示非表示を切り変える
-			tantouDiv.appendChild( createTantouSpan('すべて選択'));
+			//tantouDiv.appendChild( createTantouSpan('すべて選択'));
 
 			// クリック時のアクションを設定する
 			tantouDiv.addEventListener('click', event_Div_TantouClick);
@@ -147,7 +147,7 @@
 			// var styleText = 'background-color:' + getTantouCssColorText(tantouName) +';';
 			// $span.appendChild(createTag('span', {style: stkyleText}, '__'));
 			// $span.appendChild(document.createTextNode(tantouName));
-			var $span = $('<span>').attr({id: tantouName, class: 'tantou selected', selected : true});
+			var $span = $('<span>').attr({id: tantouName, class: 'tantou', selected : true});
 			$span.append($('<span>').css('background-color', getTantouCssColorText(tantouName)).text('__'));
 			$span.append(tantouName);
 
@@ -239,16 +239,26 @@
 			var comment = result.address;
 
 			// richmarkerのcontentの作成
-			var contentDiv = createTag('div', {}, '');
-			contentDiv.appendChild(createTag('div', {'class':'marker', 'style':'background-color:' + colorText + '; border-top-color:' + colorText + ';'}, labelText));
-			contentDiv.appendChild(createTag('div', {'class':'markerComment'}, comment));
+			var $contentDiv = $('<div>').append(
+				$('<div>')
+					.attr('class', 'marker')
+					.css({'background-color' : colorText,'border-top-color':  colorText})
+					.text(labelText),
+				$('<div>')
+					.attr('class', 'markerComment')
+					.text(comment)
+			);
+
+			// var contentDiv = createTag('div', {}, '');
+			// contentDiv.appendChild(createTag('div', {'class':'marker', 'style':'background-color:' + colorText + '; border-top-color:' + colorText + ';'}, labelText));
+			// contentDiv.appendChild(createTag('div', {'class':'markerComment'}, comment));
 
 			// マーカーの作成
 			var marker = new RichMarker({
 				position: result.latlng,
 				map: map,
 				flat: true,		//true推奨
-				content: contentDiv.outerHTML,
+				content: $contentDiv[0].outerHTML,
 			});
 
 			// マーカーを設置する
