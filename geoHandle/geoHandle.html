@@ -26,7 +26,7 @@
 	<link rel="stylesheet" href="geoHandle.css" type="text/css">
 	<script src="http://maps.google.com/maps/api/js?language=ja"></script>
 	<script src="https://google-maps-utility-library-v3.googlecode.com/svn-history/r213/trunk/richmarker/src/richmarker-compiled.js"></script>
-	<!-- <script src="http://code.jquery.com/jquery-1.11.3.min.js"></script> -->
+	<script src="http://code.jquery.com/jquery-1.11.3.min.js"></script>
 	<script src="geoHandle.js"></script>
 	<script src="./dataHandle.js"></script>
 	<script src="../dataHandle/dataHandle.js"></script>
@@ -49,7 +49,7 @@
 	<!-- サーチボックス -->
 	<div id="searchDiv">
 		<input type="textbox" id = "searchText" value="" size="40"><button id="searchButton">検索する</button>
-	</div>	
+	</div>
 	<!-- データ取込フォーム -->
 	<div id="dataDiv">
 		<div id="dataClose">×</div>
@@ -143,10 +143,15 @@
 		}
 		// 担当者の名前一覧のspanをつくる
 		function createTantouSpan(tantouName){
-			var span = createTag('span', {id: tantouName, class: 'tantou selected', selected : true});
-			var styleText = 'background-color:' + getTantouCssColorText(tantouName) +';';
-			span.appendChild(createTag('span', {style: styleText}, '__'));
-			span.appendChild(document.createTextNode(tantouName));
+			// var span = createTag('span', {id: tantouName, class: 'tantou selected', selected : true});
+			// var styleText = 'background-color:' + getTantouCssColorText(tantouName) +';';
+			// $span.appendChild(createTag('span', {style: stkyleText}, '__'));
+			// $span.appendChild(document.createTextNode(tantouName));
+			var $span = $('<span>').attr({id: tantouName, class: 'tantou selected', selected : true});
+			$span.append($('<span>').css('background-color', getTantouCssColorText(tantouName)).text('__'));
+			$span.append(tantouName);
+
+
 			// var span = document.createElement('span');
 			// span.className = "tantou";
 			// span.id = tantouName;		// id 担当者
@@ -160,7 +165,7 @@
 			// 	span.setAttribute('selected', 'true');
 			// 	span.className = 'tantou selected';
 			// }
-			return span;
+			return $span[0];
 		}
 		// --------------------------------------------------------------------
 		//  event_Div_TantouClick
@@ -185,21 +190,21 @@
 
 			// SELECT ALL 押した時のアクション
 			toggleTantouSpanSelected();
-			
-			
+
+
 			// 表示領域情報をを現在の表示と一致させる
 			myBounds = map.getBounds();
-			
+
 			// 担当者の住所リストを優先キューに入れる
 			GeoHandle.addAddress(kData.getList('住所', true, '担当者', t.id), true);
 
 			// マーカーをリフレッシュする
 			refleshMarker();
 		}
-		
+
 		//TODO SELECT ALL 押した時のアクション
 		function toggleTantouSpanSelected(){
-		
+
 		}
 
 		// --------------------------------------------------------------------
@@ -278,7 +283,7 @@
 			var nowTantouArr = kData.getList('担当者', true).filter(function(tantou){
 				return document.getElementById(tantou).getAttribute('selected') == 'true';
 			});
-			
+
 			//	データの担当者一つ一つに対して
 			kData.data.forEach(function(dataRow, id){
 				// ------表示ONのリストに名前があれば
@@ -290,8 +295,8 @@
 						// マーカーが未作成なら作成
 						if (markerArr[id] == null) markerArr[id] = createMarker( result, dataRow); // マーカーを作成
 						// マップの表示領域を拡大する
-						mymapExpandBounds(markerArr[id]); 
-						
+						mymapExpandBounds(markerArr[id]);
+
 				// ------表示ONのリストに名前がなければ
 				}else {
 						// マーカーの削除
@@ -324,7 +329,7 @@
 			if (!data.getList('住所')) return;
 			if (!data.getList('担当者')) return;
 			if (!data.getList('訪問順')) return;
-			
+
 			// フィールド名と等しい値がある行は削除する
 			data.data = data.data.filter(function(row){
 				if (row['住所'] ==='住所') return false;
@@ -332,7 +337,7 @@
 				if (row['訪問順']==='訪問順') return false;
 				return true;
 			});
-			
+
 			// Trimフラグがあれば行う
 			if (isTrimGarbage){data.data.forEach(function(row){row['住所'] = trimGarbage(row['住所']);});}
 			if (isTrimMansion){data.data.forEach(function(row){row['住所'] = trimMansionOrlater(trimGarbage(row['住所']));});}
@@ -379,7 +384,7 @@
 
 			// GeoHandleの初期化
 			//GeoHandle.init();			// キャッシュが消えるのでmainにて呼出
-			
+
 			// 地図の表示範囲初期化
 			myBounds = null;
 
@@ -421,12 +426,12 @@
 		var markerArr = [];
 
 		// マップの表示領域を格納する
-		var myBounds = new google.maps.LatLngBounds(); 
+		var myBounds = new google.maps.LatLngBounds();
 
 		// マップの初期表示を定める
 		var mapCenter = {lat:35.5, lng:139.6};
 		var	mapzoom = 14;
-		
+
 		// geocoderキャッシュ管理オブジェクトを初期化
 		GeoHandle.init();
 
