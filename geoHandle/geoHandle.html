@@ -67,17 +67,17 @@
 		// --------------------------------------------------------------------
 		//  trivial functions
 		// --------------------------------------------------------------------
-		 // tagを作る
-		function createTag(strTag, attributes, innerText){
-		    var temp = document.createElement(strTag);
-		    if(typeof attributes == 'object'){
-		      Object.keys(attributes).forEach(function(k){
-		        temp.setAttribute(k, attributes[k]);
-		      });
-		    }
-		    if(innerText){ temp.innerText = innerText; }
-		    return temp;
-		}
+		//  // tagを作る 160215 jqueryの導入によりコメントアウト
+		// function createTag(strTag, attributes, innerText){
+		//     var temp = document.createElement(strTag);
+		//     if(typeof attributes == 'object'){
+		//       Object.keys(attributes).forEach(function(k){
+		//         temp.setAttribute(k, attributes[k]);
+		//       });
+		//     }
+		//     if(innerText){ temp.innerText = innerText; }
+		//     return temp;
+		// }
 
 		// 担当者の名前から色を選出する
 		function getTantouCssColorText(tantouName){
@@ -123,49 +123,22 @@
 		// 担当者ボックスを初期化する
 		function setTantouDiv(){
 			// エレメントの取得
-			var tantouDiv = document.getElementById('tantouDiv');
-
-			// 中のエレメントを削除する
-			while(tantouDiv.firstChild){
-				tantouDiv.removeChild(tantouDiv.firstChild);
-			}
-
+			var $tantouDiv = $('#tantouDiv');
+			// 中の要素を削除する
+			$tantouDiv.empty();
 			// 工事データから担当者の一意データを取得して、担当者ボックスに格納する
-			kData.getList('担当者', true).forEach(function(element, index, array){
-				tantouDiv.appendChild( createTantouSpan(element));
+			kData.getList('担当者', true).forEach(function(element){
+				$tantouDiv.append(createTantouSpan(element));
 			});
-
-			//　全ての担当の表示非表示を切り変える
-			//tantouDiv.appendChild( createTantouSpan('すべて選択'));
-
-			// クリック時のアクションを設定する
-			tantouDiv.addEventListener('click', event_Div_TantouClick);
+			$tantouDiv.click(event_Div_TantouClick)
 		}
+
 		// 担当者の名前一覧のspanをつくる
 		function createTantouSpan(tantouName){
-			// var span = createTag('span', {id: tantouName, class: 'tantou selected', selected : true});
-			// var styleText = 'background-color:' + getTantouCssColorText(tantouName) +';';
-			// $span.appendChild(createTag('span', {style: stkyleText}, '__'));
-			// $span.appendChild(document.createTextNode(tantouName));
-			var $span = $('<span>').attr({id: tantouName, class: 'tantou', selected : true});
+			var $span = $('<span>').attr({id: tantouName, class: 'tantou', selected : false});
 			$span.append($('<span>').css('background-color', getTantouCssColorText(tantouName)).text('__'));
 			$span.append(tantouName);
-
-
-			// var span = document.createElement('span');
-			// span.className = "tantou";
-			// span.id = tantouName;		// id 担当者
-			// span.setAttribute('selected', 'false');
-			// var colorText = getTantouCssColorText(tantouName);
-			// var colorDivTag = '<span style = "background-color:' + colorText+';">__</span>';
-			// span.innerHTML = colorDivTag + ' ' +tantouName;
-
-			// // 一つ目の要素は選択ＯＮにしておく
-			// if (index == 0){
-			// 	span.setAttribute('selected', 'true');
-			// 	span.className = 'tantou selected';
-			// }
-			return $span[0];
+			return $span;
 		}
 		// --------------------------------------------------------------------
 		//  event_Div_TantouClick
