@@ -36,7 +36,7 @@
 		<div id="toggle">
 			<button id="toggleBtn" >データ取込フォーム</button>
 		</div>
-		<div id="TantouContainer">
+		<div id="tantouContainer">
 		</div>
 	</div>
 	<div id="main">
@@ -107,20 +107,29 @@
 		}
 
 		// --------------------------------------------------------------------
-		//  setTantouContainer
+		//  settantouContainer
 		// --------------------------------------------------------------------
 		// 担当者ボックスを初期化する
-		function setTantouContainer(){
+		function settantouContainer(){
+
 			// エレメントの取得
-			var $TantouContainer = $('#TantouContainer');
+			var $tantouContainer = $('#tantouContainer');
+
 			// 中の要素を削除する
-			$TantouContainer.empty();
-			// 工事データから担当者の一意データを取得して、担当者ボックスに格納する
+			$tantouContainer.empty();
+
+			// 各担当者のボタンを作成する
 			kData.getList('担当者', true).forEach(function(element){
 				var $tantouSpan = createTantouSpan(element);
 				$tantouSpan.click(event_TantouSpanClick);
-				$TantouContainer.append($tantouSpan);
+				$tantouContainer.append($tantouSpan);
 			});
+
+			// すべて表示ボタンを作成する
+			var $selallSpan = createTantouSpan('すべて表示');
+			$selallSpan.click(event_SelallSpanClick);
+			$tantouContainer.append($selallSpan);
+
 		}
 
 		// 担当者の名前一覧のspanをつくる
@@ -136,6 +145,26 @@
 			return $('#' + tantou.replace(':', '\\:')).hasClass('selected');
 		}
 
+		// すべてを表示ボタンがクリックされた時
+		function event_SelallSpanClick(event){
+			// すべて表示ボタンの選択状態を取得
+			var nowSelected = $(this).hasClass('selected');
+
+			// 担当ボックスすべてに対して状態とは逆の値をセットする
+			$('#tantouContainer > .tantou').each(function(){
+				if ( !nowSelected ){
+					$(this).addClass('selected');
+				}else{
+					$(this).removeClass('selected');
+			}});
+
+			// 表示領域情報をを現在の表示と一致させる
+			myBounds = map.getBounds();
+
+			// マーカーをリフレッシュする
+			refleshMarker();
+		}
+
 		// TantouSpanがクリックされた時
 		function event_TantouSpanClick(event){
 			// selectedクラスをトグルする
@@ -149,13 +178,7 @@
 
 			// マーカーをリフレッシュする
 			refleshMarker();
-
 		};
-
-		//TODO SELECT ALL 押した時のアクション
-		function toggleTantouSpanSelected(){
-
-		}
 
 		// --------------------------------------------------------------------
 		//  createMarker
@@ -292,20 +315,7 @@
 			// 問題なければ新しいデータでマップの初期化を行う
 			init(data);
 		}
-		// --------------------------------------------------------------------
-		//  dataDiv
-		// --------------------------------------------------------------------
-		function toggleDataDiv(){
-			var $dataDiv = $('#dataDiv');
-			var $dataText = $('#dataText');
-			$dataDiv.toggle();
-			if($dataDiv.is(':visible')){
-				setTimeout(function(){
-					$dataText.focus();
-					$dataText.text('');
-				}, 1);
-			}
-		}
+
 
 		// --------------------------------------------------------------------
 		//  init
@@ -318,7 +328,7 @@
 			kData = data;
 
 			// 担当者ボックスの初期化
-			setTantouContainer();
+			settantouContainer();
 
 			// 全マーカの削除
 			for (var i = 0; i < markerArr.length ; i++){
@@ -340,6 +350,21 @@
 			refleshMarker();
 		}
 
+
+		// --------------------------------------------------------------------
+		//  dataDiv
+		// --------------------------------------------------------------------
+		function toggleDataDiv(){
+			var $dataDiv = $('#dataDiv');
+			var $dataText = $('#dataText');
+			$dataDiv.toggle();
+			if($dataDiv.is(':visible')){
+				setTimeout(function(){
+					$dataText.focus();
+					$dataText.text('');
+				}, 1);
+			}
+		}
 		// データ取込フォーム　dataDiv関連のイベントを設定する
 		function setDataDivEvents(){
 			$('#dataBtnImport').click(function(){
@@ -349,7 +374,6 @@
 			$('#toggleBtn').mousedown(toggleDataDiv);
 			$('#dataClose').click(toggleDataDiv)
 		}
-
 		// --------------------------------------------------------------------
 		//  main
 		// --------------------------------------------------------------------
