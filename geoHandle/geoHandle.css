@@ -8,7 +8,7 @@ body, html{
   font-size: 13px;
 }
 #side{
-  width:200px;
+  width:140px;
   height:100%;
   float:left;
   line-height: 28px;
@@ -16,7 +16,7 @@ body, html{
   overflow-y: scroll;
 }
 #main{
-  width:calc(100% - 200px);
+  width:calc(100% - 140px);
   height:100%;
   float:right;
 }
@@ -43,7 +43,7 @@ body, html{
   position:fixed;
   text-align: center;
   top: 10px;
-  left: 200px;
+  left: 140px;
   padding: 10px 10px;
   border-radius:10px;
   background: Honeydew;
@@ -69,7 +69,7 @@ body, html{
   position:fixed;
   text-align: center;
   top: 10px;
-  left: 200px;
+  left: 140px;
   padding: 10px 10px;
   border-radius:5px;
   background: Honeydew;
@@ -128,7 +128,7 @@ body, html{
   text-shadow:  0 -1px 1px #FFF, -1px 0 1px #FFF, 1px 0 1px #FFF;
   height: 20px;
   line-height: 20px;
-  width: 200px;
+  width: 140px;
   overflow: hidden;
 }
 .tantou{
@@ -143,6 +143,6 @@ body, html{
   cursor: pointer;
   background-color: #fff;
 }
-.selected{
+.marked{
   background-color: #ddf;
 }

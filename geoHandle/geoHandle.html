@@ -129,7 +129,6 @@
 			var $selallSpan = createTantouSpan('すべて表示');
 			$selallSpan.click(event_SelallSpanClick);
 			$tantouContainer.append($selallSpan);
-
 		}
 
 		// 担当者の名前一覧のspanをつくる
@@ -141,21 +140,22 @@
 		}
 
 		// 担当者の名前が選択されているか判別する
-		function isTantouSpanSelected(tantou){
-			return $('#' + tantou.replace(':', '\\:')).hasClass('selected');
+		function isTantouSpanMarked(tantou){
+			console.log(tantou);
+			return $('#' + tantou.replace(':', '\\:')).hasClass('marked');
 		}
 
 		// すべてを表示ボタンがクリックされた時
 		function event_SelallSpanClick(event){
 			// すべて表示ボタンの選択状態を取得
-			var nowSelected = $(this).hasClass('selected');
+			var nowMarked = $(this).hasClass('marked');
 
 			// 担当ボックスすべてに対して状態とは逆の値をセットする
 			$('#tantouContainer > .tantou').each(function(){
-				if ( !nowSelected ){
-					$(this).addClass('selected');
+				if ( !nowMarked ){
+					$(this).addClass('marked');
 				}else{
-					$(this).removeClass('selected');
+					$(this).removeClass('marked');
 			}});
 
 			// 表示領域情報をを現在の表示と一致させる
@@ -167,15 +167,15 @@
 
 		// TantouSpanがクリックされた時
 		function event_TantouSpanClick(event){
-			// selectedクラスをトグルする
-			$(this).toggleClass('selected');
+			// markedクラスをトグルする
+			$(this).toggleClass('marked');
 
 			// 該当担当者の住所リストを優先キューに入れる
 			GeoHandle.addAddress(kData.getList('住所', true, '担当者', $(this).attr('id')), true);
 
-			// 表示領域情報をを現在の表示と一致させる
-			myBounds = map.getBounds();
-
+			// 追加表示ならば表示領域情報をを現在の表示と一致させる
+			if ($(this).hasClass('marked')) myBounds = map.getBounds();
+			
 			// マーカーをリフレッシュする
 			refleshMarker();
 		};
@@ -209,6 +209,9 @@
 			// 吹き出しの色を取得
 			var colorText = getTantouCssColorText(dataRow['担当者']);
 
+			// コメントの内容
+			var commentText = result.address;
+
 			// richmarkerのcontentの作成
 			var $contentDiv = $('<div>').append(
 				$('<div>')
@@ -217,7 +220,7 @@
 					.text(labelText),
 				$('<div>')
 					.attr('class', 'markerComment')
-					.text(result.address)
+					.text(commentText)
 			);
 
 			// マーカーの作成
@@ -258,23 +261,27 @@
 			//	データの担当者一つ一つに対して
 			kData.data.forEach(function(dataRow, id){
 				// ------表示ONのリストに名前があれば
-				if (isTantouSpanSelected(dataRow['担当者'])){
-						// 住所キャッシュの取得
-						var result = GeoHandle.cacheResult[dataRow['住所']];
-						//ジオコーダ取得失敗なら終了
-						if (!result) return;
-						// マーカーが未作成なら作成
-						if (markerArr[id] == null) markerArr[id] = createMarker( result, dataRow); // マーカーを作成
-						// マップの表示領域を拡大する
-						mymapExpandBounds(markerArr[id]);
+				if (!isTantouSpanMarked(dataRow['担当者'])){
+					// マーカーの削除
+					if(markerArr[id]) markerArr[id].setMap(null);
+					markerArr[id] = null;
 				// ------表示ONのリストに名前がなければ
 				}else {
-						// マーカーの削除
-						if(markerArr[id]) markerArr[id].setMap(null);
-						markerArr[id] = null;
+					// 住所キャッシュの取得
+					var result = GeoHandle.cacheResult[dataRow['住所']];
+					//ジオコーダ取得失敗なら終了
+					if (!result) return;
+					// マーカーが未作成なら作成
+					if (markerArr[id] == null) markerArr[id] = createMarker( result, dataRow); // マーカーを作成
+					// マップの表示領域を拡大する
+					mymapExpandBounds(markerArr[id]);
 				}
 			});
 		}
+		function putMarkerIfTantouMarked(){
+
+		}
+
 		// 指定マーカーに合わせてマップの表示領域を拡大する
 		function mymapExpandBounds(marker){
 			//var curBounds = myBounds;
@@ -316,7 +323,6 @@
 			init(data);
 		}
 
-
 		// --------------------------------------------------------------------
 		//  init
 		// --------------------------------------------------------------------
@@ -349,7 +355,6 @@
 		function myCallBack(request, result){
 			refleshMarker();
 		}
-
 
 		// --------------------------------------------------------------------
 		//  dataDiv
@@ -389,15 +394,13 @@
 		// マップの表示領域を格納する
 		var myBounds = new google.maps.LatLngBounds();
 
-		// マップの初期表示を定める
+		// googleマップの読込み
 		var mapCenter = {lat:35.5, lng:139.6};
 		var	mapzoom = 14;
+		var map = new google.maps.Map($('#map')[0], {center:mapCenter,zoom:mapzoom});
 
 		// geocoderキャッシュ管理オブジェクトを初期化
 		GeoHandle.init();
-
-		// googleマップの読込み
-		var map = new google.maps.Map($('#map')[0], {center:mapCenter,zoom:mapzoom});
 
 		// 呼出パラメータでマップを生成する
 		if (location.hash.length >= 0){
