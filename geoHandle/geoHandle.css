@@ -47,10 +47,10 @@ body, html{
   padding: 10px 10px;
   border-radius:10px;
   background: Honeydew;
-  visibility: hidden;
-  /*
+  /*visibility: hidden;*/
+
   display:none;
-  */
+
 }
 #dataClose{
   width: 1.8rem;
