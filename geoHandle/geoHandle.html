@@ -36,7 +36,8 @@
 		<div id="toggle">
 			<button id="toggleBtn" >データ取込フォーム</button>
 		</div>
-		<div id="tantouDiv"></div>
+		<div id="TantouContainer">
+		</div>
 	</div>
 	<div id="main">
 		<div id="top">
@@ -67,18 +68,6 @@
 		// --------------------------------------------------------------------
 		//  trivial functions
 		// --------------------------------------------------------------------
-		//  // tagを作る 160215 jqueryの導入によりコメントアウト
-		// function createTag(strTag, attributes, innerText){
-		//     var temp = document.createElement(strTag);
-		//     if(typeof attributes == 'object'){
-		//       Object.keys(attributes).forEach(function(k){
-		//         temp.setAttribute(k, attributes[k]);
-		//       });
-		//     }
-		//     if(innerText){ temp.innerText = innerText; }
-		//     return temp;
-		// }
-
 		// 担当者の名前から色を選出する
 		function getTantouCssColorText(tantouName){
 			var tantouArr =kData.getList('担当者', true);
@@ -118,62 +107,50 @@
 		}
 
 		// --------------------------------------------------------------------
-		//  setTantouDiv
+		//  setTantouContainer
 		// --------------------------------------------------------------------
 		// 担当者ボックスを初期化する
-		function setTantouDiv(){
+		function setTantouContainer(){
 			// エレメントの取得
-			var $tantouDiv = $('#tantouDiv');
+			var $TantouContainer = $('#TantouContainer');
 			// 中の要素を削除する
-			$tantouDiv.empty();
+			$TantouContainer.empty();
 			// 工事データから担当者の一意データを取得して、担当者ボックスに格納する
 			kData.getList('担当者', true).forEach(function(element){
-				$tantouDiv.append(createTantouSpan(element));
+				var $tantouSpan = createTantouSpan(element);
+				$tantouSpan.click(event_TantouSpanClick);
+				$TantouContainer.append($tantouSpan);
 			});
-			$tantouDiv.click(event_Div_TantouClick)
 		}
 
 		// 担当者の名前一覧のspanをつくる
 		function createTantouSpan(tantouName){
-			var $span = $('<span>').attr({id: tantouName, class: 'tantou', selected : false});
+			var $span = $('<span>').attr({id: tantouName, class: 'tantou'});
 			$span.append($('<span>').css('background-color', getTantouCssColorText(tantouName)).text('__'));
 			$span.append(tantouName);
 			return $span;
 		}
-		// --------------------------------------------------------------------
-		//  event_Div_TantouClick
-		// --------------------------------------------------------------------
-		// 担当者ボックスがクリックされたとき
-		function event_Div_TantouClick(event){
 
-			// DOMの取得
-			var t = event.target;
+		// 担当者の名前が選択されているか判別する
+		function isTantouSpanSelected(tantou){
+			return $('#' + tantou.replace(':', '\\:')).hasClass('selected');
+		}
 
-			// 担当者以外がクリックされていたら終了//
-			if (t.className.indexOf('tantou')<0) return;
+		// TantouSpanがクリックされた時
+		function event_TantouSpanClick(event){
+			// selectedクラスをトグルする
+			$(this).toggleClass('selected');
 
-			// クリックされた担当者の選択状態を反転させる
-			if (t.getAttribute('selected') =='true'){
-				t.setAttribute('selected', 'false');
-				t.className = 'tantou';
-			}else{
-				t.setAttribute('selected', 'true');
-				t.className = 'tantou selected';
-			}
-
-			// SELECT ALL 押した時のアクション
-			toggleTantouSpanSelected();
-
+			// 該当担当者の住所リストを優先キューに入れる
+			GeoHandle.addAddress(kData.getList('住所', true, '担当者', $(this).attr('id')), true);
 
 			// 表示領域情報をを現在の表示と一致させる
 			myBounds = map.getBounds();
 
-			// 担当者の住所リストを優先キューに入れる
-			GeoHandle.addAddress(kData.getList('住所', true, '担当者', t.id), true);
-
 			// マーカーをリフレッシュする
 			refleshMarker();
-		}
+
+		};
 
 		//TODO SELECT ALL 押した時のアクション
 		function toggleTantouSpanSelected(){
@@ -199,6 +176,7 @@
 			return marker;
 
 		}
+
 		// richMarkerをつくる
 		function createRichMarker( result, dataRow){
 
@@ -208,9 +186,6 @@
 			// 吹き出しの色を取得
 			var colorText = getTantouCssColorText(dataRow['担当者']);
 
-			// 横のコメントを設定
-			var comment = result.address;
-
 			// richmarkerのcontentの作成
 			var $contentDiv = $('<div>').append(
 				$('<div>')
@@ -219,12 +194,8 @@
 					.text(labelText),
 				$('<div>')
 					.attr('class', 'markerComment')
-					.text(comment)
+					.text(result.address)
 			);
-
-			// var contentDiv = createTag('div', {}, '');
-			// contentDiv.appendChild(createTag('div', {'class':'marker', 'style':'background-color:' + colorText + '; border-top-color:' + colorText + ';'}, labelText));
-			// contentDiv.appendChild(createTag('div', {'class':'markerComment'}, comment));
 
 			// マーカーの作成
 			var marker = new RichMarker({
@@ -261,16 +232,10 @@
 		// --------------------------------------------------------------------
 		// マーカーを再描画する
 		function refleshMarker(){
-
-			//	表示ON状態の担当者のリストを取得
-			var nowTantouArr = kData.getList('担当者', true).filter(function(tantou){
-				return document.getElementById(tantou).getAttribute('selected') == 'true';
-			});
-
 			//	データの担当者一つ一つに対して
 			kData.data.forEach(function(dataRow, id){
 				// ------表示ONのリストに名前があれば
-				if (nowTantouArr.indexOf(dataRow['担当者']) >= 0 ){
+				if (isTantouSpanSelected(dataRow['担当者'])){
 						// 住所キャッシュの取得
 						var result = GeoHandle.cacheResult[dataRow['住所']];
 						//ジオコーダ取得失敗なら終了
@@ -279,7 +244,6 @@
 						if (markerArr[id] == null) markerArr[id] = createMarker( result, dataRow); // マーカーを作成
 						// マップの表示領域を拡大する
 						mymapExpandBounds(markerArr[id]);
-
 				// ------表示ONのリストに名前がなければ
 				}else {
 						// マーカーの削除
@@ -331,30 +295,30 @@
 		// --------------------------------------------------------------------
 		//  dataDiv
 		// --------------------------------------------------------------------
-		function toggleDataDiv(visible){
-			var dataDiv = document.getElementById('dataDiv');
-			var dataText = document.getElementById('dataText');
-
-			// noinput then toggle
-			if (visible===undefined){
-					visible = (dataDiv.style.visibility != 'visible')
-			}
-			//
-			if (visible){
-				dataDiv.style.visibility = 'visible';
-				dataText.focus();
-				dataText.select();
-			}else{
-				dataDiv.style.visibility = 'hidden';
+		function toggleDataDiv(){
+			var $dataDiv = $('#dataDiv');
+			var $dataText = $('#dataText');
+			$dataDiv.toggle();
+			if($dataDiv.is(':visible')){
+				setTimeout(function(){
+					$dataText.focus();
+					$dataText.text('');
+				}, 1);
 			}
 		}
+
 		// --------------------------------------------------------------------
 		//  init
 		// --------------------------------------------------------------------
-		// 渡されたデータでマップを初期化する kDataを初期化する
+		// 渡されたデータをプロットデータとしてkDataを初期化
+		// 担当者ボックスを初期化する、マーカーを初期化する
 		function init(data){
+
 			// 引数のデータを工事データ配列格納
 			kData = data;
+
+			// 担当者ボックスの初期化
+			setTantouContainer();
 
 			// 全マーカの削除
 			for (var i = 0; i < markerArr.length ; i++){
@@ -362,22 +326,12 @@
 			}
 			markerArr = [];
 
-			// 担当者ボックスの初期化
-			setTantouDiv();
-
-			// GeoHandleの初期化
-			//GeoHandle.init();			// キャッシュが消えるのでmainにて呼出
-
 			// 地図の表示範囲初期化
 			myBounds = null;
 
-			// Geocoder成功時のコールバックを設定
+			// GeoHandleオブジェクトの操作
 			GeoHandle.onLocate = myCallBack; //マーカーの再描画
-
-			// Geocoderで調べる住所一覧を登録
 			GeoHandle.addAddress(kData.getList('住所', true));
-
-			// GeoHandleの検索開始
 			GeoHandle.doNextSearch();
 		}
 
@@ -386,21 +340,21 @@
 			refleshMarker();
 		}
 
+		// データ取込フォーム　dataDiv関連のイベントを設定する
+		function setDataDivEvents(){
+			$('#dataBtnImport').click(function(){
+				toggleDataDiv();
+				importData($('#dataText').val(), $('#dataChkTrim').prop('checked'), $('dataChkMansion').prop('checked'));
+			});
+			$('#toggleBtn').mousedown(toggleDataDiv);
+			$('#dataClose').click(toggleDataDiv)
+		}
+
 		// --------------------------------------------------------------------
 		//  main
 		// --------------------------------------------------------------------
 		// 取り込みボタンのイベントを設定する
-		document.getElementById('dataBtnImport').addEventListener('click', function(){
-			var dataText = document.getElementById('dataText');
-			var dataChkTrim = document.getElementById('dataChkTrim');
-			var dataChkMansion = document.getElementById('dataChkMansion');
-			importData(dataText.value, dataChkTrim.checked, dataChkMansion.checked);
-			toggleDataDiv(false);
-		});
-		document.getElementById('toggleBtn').addEventListener('mousedown', function(){
-			toggleDataDiv();});
-		document.getElementById('dataClose').addEventListener('click', function(){
-			toggleDataDiv(false);});
+		setDataDivEvents();
 
 		// 工事データ配列 init関数で初期化される
 		var kData = [];
@@ -419,14 +373,12 @@
 		GeoHandle.init();
 
 		// googleマップの読込み
-		var map = new google.maps.Map(document.getElementById('map'), {center:mapCenter,zoom:mapzoom});
+		var map = new google.maps.Map($('#map')[0], {center:mapCenter,zoom:mapzoom});
 
 		// 呼出パラメータでマップを生成する
 		if (location.hash.length >= 0){
 			importData(decodeURI(location.hash.substring(1)));
 		}
-
-
 	})();
 
 </script>
