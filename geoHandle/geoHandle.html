@@ -34,7 +34,7 @@
 <body>
 	<div id="side">
 		<div id="toggle">
-			<button id="toggleBtn" >データ取込フォーム</button>
+			<button id="toggleBtn" >データ取込</button>
 		</div>
 		<div id="tantouContainer">
 		</div>
@@ -102,7 +102,6 @@
 					break;
 				}
 			}
-			//if (i != str.length) console.log(str.substr(0,i) + ':' + str.substr(i, str.length - i));
 			return str.substr(0, i);
 		}
 
@@ -141,7 +140,6 @@
 
 		// 担当者の名前が選択されているか判別する
 		function isTantouSpanMarked(tantou){
-			console.log(tantou);
 			return $('#' + tantou.replace(':', '\\:')).hasClass('marked');
 		}
 
@@ -297,8 +295,11 @@
 		// --------------------------------------------------------------------
 		// 渡されたテキストをパースして地図プロットする
 		function importData(dataText, isTrimGarbage, isTrimMansion){
-			// 指定がなければのdataTextエレメントのテキストでパースする
+		
+			// テキストが空なら終了
 			if (!dataText) return;
+			
+			// テキストをパースする
 			var data = dataHandle.csvParse(dataText, '\t', true);
 
 			// 正しいフィールドを持っているか確認
@@ -359,14 +360,22 @@
 		// --------------------------------------------------------------------
 		//  dataDiv
 		// --------------------------------------------------------------------
+		// dataDivの表示・非表示を切り返す
 		function toggleDataDiv(){
+			// DOMの取得
 			var $dataDiv = $('#dataDiv');
 			var $dataText = $('#dataText');
+			
+			// 表示・非表示を切り替える
 			$dataDiv.toggle();
+			
+			// 表示ＯＮならテキストにフォーカス等の操作をする
 			if($dataDiv.is(':visible')){
 				setTimeout(function(){
+					// 現在のデータをCSVにして再表示
+					$dataText.text(dataHandle.csvOutput(kData.data, '\t'));
 					$dataText.focus();
-					$dataText.text('');
+					$dataText.append('');
 				}, 1);
 			}
 		}
