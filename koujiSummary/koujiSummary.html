@@ -305,10 +305,16 @@
       createTag('div', {style: 'width: 60rem;'}, '『' + tantouName + '』の予定'),
       createTag('textarea', {id: 'placeList', rows:'5', cols: '90'}),
       createTag('span', {id:'select', style: 'cursor:pointer;'}, '<<選択>>'),
-      createTag('a', {href: 'http://geroro.webcrow.jp/geoHandle/geoHandle.html#' + encodeURI(listText), target: '_blank'}, '地図サイト')
+      createTag('a', {href: 'http://geroro.webcrow.jp/geoHandle/geoHandle.html#' + encodeURI(listText), target: '_blank'}, '地図サイト'),
+      createTag('br','',''),
+      createTag('textarea', {id: 'urlText', rows:'1', cols: '90'})
     );
     // textarea innerText
-    document.getElementById('placeList').innerHTML = listText;
+    document.getElementById('placeList').innerText = listText;
+    
+    // urlText innerText
+    document.getElementById('urlText').innerText = 'http://geroro.webcrow.jp/geoHandle/geoHandle.html#' + encodeURI(listText);
+    
     // addEvent
     document.getElementById('select').addEventListener('click', displayHintTantou_selectAll);
   }
