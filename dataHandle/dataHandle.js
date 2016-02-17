@@ -58,6 +58,55 @@ dataHandle.csvParse = function(strSrc, chrDelimiter, isUseHeader){
 }
 
 // =======================================================
+// csvOutput Method
+// =======================================================
+// out CSV based on data of ObjectArray or ArrayArray
+// data
+// returns  CSV text in which each field in a record is separated by chrDelimiter.
+dataHandle.csvOutput = function(data, chrDelimiter){
+	// for ObjectArray or ArrayArray only
+	if ( !Array.isArray( data )) return;
+	if (  data.length === 0 ) return;
+	
+	// is data ObjectArray or ArrayArray  TODO requires more strict examination
+	var flgArrayArray = ( Array.isArray(data[0] ) );
+	
+	// switch function on type
+	if ( flgArrayArray ) {
+		return outputArrayArray(data, chrDelimiter);
+	}else {
+		return outputObjectArray(data, chrDelimiter);
+	}
+	
+	// inner functions -----------------------
+	function outputArrayArray(data, chrDelimiter){
+		var strTemp = '';
+		data.forEach(function(row){
+			strTemp += row.join(chrDelimiter) + '\n';
+		});
+		return strTemp;
+	}
+	function outputObjectArray(data, chrDelimiter){
+		var strTemp = '';
+		// get HeadLines based on firstRow data keys
+		var keys = Object.keys(data[0]);
+		
+		// output HeadLines 
+		strTemp += keys.join(chrDelimiter) + '\n';
+		
+		// output each item on each row
+		data.forEach(function(row){
+			keys.forEach(function(key, id , arr){
+				strTemp += row[key];
+				strTemp += (id < arr.length -1 ) ? chrDelimiter : '\n'
+			});
+		});
+		return strTemp;
+	}
+}
+
+
+// =======================================================
 // ObjectArray Class
 // =======================================================
   dataHandle.ObjectArray = function(data){
