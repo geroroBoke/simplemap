@@ -106,10 +106,10 @@
 		}
 
 		// --------------------------------------------------------------------
-		//  settantouContainer
+		//  setTantouContainer
 		// --------------------------------------------------------------------
 		// 担当者ボックスを初期化する
-		function settantouContainer(){
+		function setTantouContainer(){
 
 			// エレメントの取得
 			var $tantouContainer = $('#tantouContainer');
@@ -138,23 +138,24 @@
 			return $span;
 		}
 
-		// 担当者の名前が選択されているか判別する
-		function isTantouSpanMarked(tantou){
-			return $('#' + tantou.replace(':', '\\:')).hasClass('marked');
+		// // 担当者の名前が選択されているか判別する
+		// function isTantouSpanMarked(tantou){
+		// 	return $('#' + tantou.replace(':', '\\:')).hasClass('marked');
+		// }
+		// 担当者スパンに特定のクラスが付いているか判別する
+		function isTantouClassed(tantou, classname){
+			return $('#' + tantou.replace(':', '\\:')).hasClass(classname);
 		}
 
 		// すべてを表示ボタンがクリックされた時
 		function event_SelallSpanClick(event){
-			// すべて表示ボタンの選択状態を取得
-			var nowMarked = $(this).hasClass('marked');
 
-			// 担当ボックスすべてに対して状態とは逆の値をセットする
-			$('#tantouContainer > .tantou').each(function(){
-				if ( !nowMarked ){
-					$(this).addClass('marked');
-				}else{
-					$(this).removeClass('marked');
-			}});
+			// すべて表示ボタンの選択状態をトグル
+			$(this).toggleClass('marked');
+
+			// 他の要素もすべて表示ボタンに倣う
+			if ($(this).hasClass('marked')){ $(this).siblings().addClass('marked');
+			}else {$(this).siblings().removeClass('marked');}
 
 			// 表示領域情報をを現在の表示と一致させる
 			myBounds = map.getBounds();
@@ -165,16 +166,25 @@
 
 		// TantouSpanがクリックされた時
 		function event_TantouSpanClick(event){
+			// 他のスパンのfocusedを消す
+			$(this).siblings().removeClass('focused');
 
 			// markedクラスをトグルする
 			$(this).toggleClass('marked');
 
-			// 該当担当者の住所リストを優先キューに入れる
-			GeoHandle.addAddress(kData.getList('住所', true, '担当者', $(this).attr('id')), true);
+			// markedにfocusedクラスも倣う
+			if ($(this).hasClass('marked')){ $(this).addClass('focused');
+			}else{$(this).removeClass('focused');}
 
-			// 追加表示ならば表示領域情報をを現在の表示と一致させる
-			if ($(this).hasClass('marked')) myBounds = map.getBounds();
-
+			// フォーカス表示ならば
+			if ($(this).hasClass('focused')){
+				// 該当担当者の住所リストを優先キューに入れる
+				GeoHandle.addAddress(kData.getList('住所', true, '担当者', $(this).attr('id')), true);
+				// 表示領域情報を空にする
+				//myBounds = null;
+				// 表示領域情報を現在の表示と一致させる
+				myBounds = 	map.getBounds();
+			}
 			// マーカーをリフレッシュする
 			refleshMarker();
 		};
@@ -256,12 +266,13 @@
 		function refleshMarker(){
 			//	データの担当者一つ一つに対して
 			kData.data.forEach(function(dataRow, id){
-				// ------表示ONのリストに名前があれば
-				if (!isTantouSpanMarked(dataRow['担当者'])){
+				// marked OFF
+				if (!isTantouClassed(dataRow['担当者'], 'marked')){
 					// マーカーの削除
 					if(markerArr[id]) markerArr[id].setMap(null);
 					markerArr[id] = null;
-				// ------表示ONのリストに名前がなければ
+
+				// marked ON
 				}else {
 					// 住所キャッシュの取得
 					var result = GeoHandle.cacheResult[dataRow['住所']];
@@ -269,8 +280,8 @@
 					if (!result) return;
 					// マーカーが未作成なら作成
 					if (markerArr[id] == null) markerArr[id] = createMarker( result, dataRow); // マーカーを作成
-					// マップの表示領域を拡大する
-					mymapExpandBounds(markerArr[id]);
+					// focused // マップの表示領域を拡大する
+					if (isTantouClassed(dataRow['担当者'], 'focused'))mymapExpandBounds(markerArr[id]);
 				}
 			});
 		}
@@ -315,22 +326,23 @@
 			if (isTrimGarbage){data.data.forEach(function(row){row['住所'] = trimGarbage(row['住所']);});}
 			if (isTrimMansion){data.data.forEach(function(row){row['住所'] = trimMansionOrlater(trimGarbage(row['住所']));});}
 
-			// 問題なければ新しいデータでマップの初期化を行う
-			init(data);
+			// dataをプロット用のデータとして採用する
+			kData = data;
+
+			// 新しいデータでマップの初期化をしなおす
+			init();
 		}
 
 		// --------------------------------------------------------------------
 		//  init
 		// --------------------------------------------------------------------
-		// 渡されたデータをプロットデータとしてkDataを初期化
 		// 担当者ボックスを初期化する、マーカーを初期化する
-		function init(data){
-
-			// 引数のデータを工事データ配列格納
-			kData = data;
+		function init(){
+			// データがなければ終了
+			if (!kData) return;
 
 			// 担当者ボックスの初期化
-			settantouContainer();
+			setTantouContainer();
 
 			// 全マーカの削除
 			for (var i = 0; i < markerArr.length ; i++){
@@ -383,7 +395,7 @@
 			$('#toggleBtn').click(toggleDataDiv);
 			$('#dataClose').click(toggleDataDiv)
 		}
-		// サーチボックス 検索場所に新しくマーカーを立てる TODO
+		// サーチボックス 検索場所に新しくマーカーを立てる
 		function setSearchDivEvents(){
 			$('#searchButton').click(function(){
 				var addData = {};
@@ -396,8 +408,9 @@
 					kData.data.push(addData);
 				}
 
-				// TODO イニットはやりすぎ?
-				init(kData);
+				// マップを初期化し直す
+				// TODO イニットではなくリフレッシュ的なやつを考える
+				init();
 			});
 		}
 
@@ -410,7 +423,7 @@
 		// 検索ボタンのイベントを設定する
 		setSearchDivEvents();
 
-		// data ObjectArray オブジェクト init内で初期化される
+		// data ObjectArray オブジェクト dataImportないで初期化される
 		var kData;
 
 		// マーカー配列を用意

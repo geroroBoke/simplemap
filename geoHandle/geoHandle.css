@@ -144,5 +144,8 @@ body, html{
   background-color: #fff;
 }
 .marked{
-  background-color: #ddf;
+  background-color: #eef;
+}
+.focused{
+  background-color: #dfd;
 }
