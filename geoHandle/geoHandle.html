@@ -165,6 +165,7 @@
 
 		// TantouSpanがクリックされた時
 		function event_TantouSpanClick(event){
+
 			// markedクラスをトグルする
 			$(this).toggleClass('marked');
 
@@ -173,7 +174,7 @@
 
 			// 追加表示ならば表示領域情報をを現在の表示と一致させる
 			if ($(this).hasClass('marked')) myBounds = map.getBounds();
-			
+
 			// マーカーをリフレッシュする
 			refleshMarker();
 		};
@@ -184,10 +185,16 @@
 		// GeoHandleのchacheResultに基づいてマーカーを作成する
 		function createMarker( result, dataRow){
 
-			// richMarkerをつくる
-			var marker = createRichMarker( result, dataRow);
+			// richMarkerのプロパティ
+			var latlng = result.latlng;
+			var labelText = dataRow['担当者'].match(/[^\d:;#]/) + dataRow['訪問順']; // 吹き出しの中身 	// 数字や記号以外で最初の一文字を取得する
+			var colorText = getTantouCssColorText(dataRow['担当者']);// 吹き出しの色を取得
+			var commentText = result.address; // 横のコメントの内容
 
-			// InfoWindowをつくってイベントに紐付けする
+			// richMarkerを作成
+			var marker = createRichMarker(latlng, labelText, colorText, commentText);
+
+			// クリック時にInfoWindowを作成
 			marker.addListener('click', function(e){
 				var info = createInfoWindow(dataRow);
 				info.open(map, marker);
@@ -199,16 +206,7 @@
 		}
 
 		// richMarkerをつくる
-		function createRichMarker( result, dataRow){
-
-			// 吹き出しに表示するテキストを設定
-			var labelText = dataRow['担当者'].substr(4,1) + dataRow['訪問順']; // var labelText = dataRow['訪問順'];
-
-			// 吹き出しの色を取得
-			var colorText = getTantouCssColorText(dataRow['担当者']);
-
-			// コメントの内容
-			var commentText = result.address;
+		function createRichMarker(latlng, labelText, colorText, commentText){
 
 			// richmarkerのcontentの作成
 			var $contentDiv = $('<div>').append(
@@ -223,7 +221,7 @@
 
 			// マーカーの作成
 			var marker = new RichMarker({
-				position: result.latlng,
+				position: latlng,
 				map: map,
 				flat: true,		//true推奨
 				content: $contentDiv[0].outerHTML,
@@ -276,9 +274,6 @@
 				}
 			});
 		}
-		function putMarkerIfTantouMarked(){
-
-		}
 
 		// 指定マーカーに合わせてマップの表示領域を拡大する
 		function mymapExpandBounds(marker){
@@ -295,10 +290,10 @@
 		// --------------------------------------------------------------------
 		// 渡されたテキストをパースして地図プロットする
 		function importData(dataText, isTrimGarbage, isTrimMansion){
-		
+
 			// テキストが空なら終了
 			if (!dataText) return;
-			
+
 			// テキストをパースする
 			var data = dataHandle.csvParse(dataText, '\t', true);
 
@@ -365,37 +360,58 @@
 			// DOMの取得
 			var $dataDiv = $('#dataDiv');
 			var $dataText = $('#dataText');
-			
+
 			// 表示・非表示を切り替える
 			$dataDiv.toggle();
-			
+
 			// 表示ＯＮならテキストにフォーカス等の操作をする
 			if($dataDiv.is(':visible')){
 				setTimeout(function(){
 					// 現在のデータをCSVにして再表示
-					$dataText.text(dataHandle.csvOutput(kData.data, '\t'));
+					if (kData) $dataText.text(dataHandle.csvOutput(kData.data, '\t'));
 					$dataText.focus();
 					$dataText.append('');
 				}, 1);
 			}
 		}
-		// データ取込フォーム　dataDiv関連のイベントを設定する
+		// データ取込フォーム dataDiv関連のイベントを設定する
 		function setDataDivEvents(){
 			$('#dataBtnImport').click(function(){
 				toggleDataDiv();
 				importData($('#dataText').val(), $('#dataChkTrim').prop('checked'), $('dataChkMansion').prop('checked'));
 			});
-			$('#toggleBtn').mousedown(toggleDataDiv);
+			$('#toggleBtn').click(toggleDataDiv);
 			$('#dataClose').click(toggleDataDiv)
 		}
+		// サーチボックス 検索場所に新しくマーカーを立てる TODO
+		function setSearchDivEvents(){
+			$('#searchButton').click(function(){
+				var addData = {};
+				addData['担当者'] = '他';
+				addData['訪問順'] = '';
+				addData['住所'] = $('#searchText').val();
+				if (!kData){
+					kData = new dataHandle.ObjectArray([ addData]);
+				}else{
+					kData.data.push(addData);
+				}
+
+				// TODO イニットはやりすぎ?
+				init(kData);
+			});
+		}
+
 		// --------------------------------------------------------------------
 		//  main
 		// --------------------------------------------------------------------
 		// 取り込みボタンのイベントを設定する
 		setDataDivEvents();
 
-		// 工事データ配列 init関数で初期化される
-		var kData = [];
+		// 検索ボタンのイベントを設定する
+		setSearchDivEvents();
+
+		// data ObjectArray オブジェクト init内で初期化される
+		var kData;
 
 		// マーカー配列を用意
 		var markerArr = [];

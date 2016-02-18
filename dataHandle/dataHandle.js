@@ -39,6 +39,7 @@ dataHandle.csvParse = function(strSrc, chrDelimiter, isUseHeader){
       }
     }
     return new this.ObjectArray(tempData);
+
   }else{
     // parse as an ArrayArray -----------
     if (lines.length < 1) return;
@@ -67,17 +68,17 @@ dataHandle.csvOutput = function(data, chrDelimiter){
 	// for ObjectArray or ArrayArray only
 	if ( !Array.isArray( data )) return;
 	if (  data.length === 0 ) return;
-	
+
 	// is data ObjectArray or ArrayArray  TODO requires more strict examination
 	var flgArrayArray = ( Array.isArray(data[0] ) );
-	
+
 	// switch function on type
 	if ( flgArrayArray ) {
 		return outputArrayArray(data, chrDelimiter);
 	}else {
 		return outputObjectArray(data, chrDelimiter);
 	}
-	
+
 	// inner functions -----------------------
 	function outputArrayArray(data, chrDelimiter){
 		var strTemp = '';
@@ -90,10 +91,10 @@ dataHandle.csvOutput = function(data, chrDelimiter){
 		var strTemp = '';
 		// get HeadLines based on firstRow data keys
 		var keys = Object.keys(data[0]);
-		
-		// output HeadLines 
+
+		// output HeadLines
 		strTemp += keys.join(chrDelimiter) + '\n';
-		
+
 		// output each item on each row
 		data.forEach(function(row){
 			keys.forEach(function(key, id , arr){
@@ -116,23 +117,23 @@ dataHandle.csvOutput = function(data, chrDelimiter){
   dataHandle.ObjectArray.prototype.filterRow = function(findLabel, findValue){
     // 編集用のデータを用意
     var tempData = this.data;
-    
+
     // 検索指定があれば対象行をしぼる
     if (findLabel && findValue){
       tempData = tempData.filter(function(element, index, array){
       	// 該当フィールド見当たらなければ終了
         if (!element[findLabel]) return;
-        
+
         if ( Array.isArray(findValue) ){
           //  配列　配列のいずれかに等しい
           return findValue.some(function(value){
             return element[findLabel] === value;
           });
-          
+
         }else if (findValue.substr(0,2) == '*='){
         　// "*=VALUE" VALUEを含む
           return element[findLabel].indexOf(findValue.slice(2)) != -1 ;
-          
+
         }else{
           // "VALUE" VALUEに等しい
           return element[findLabel] === findValue;
