@@ -1,4 +1,4 @@
-<!DOCTYPE HTML>
+<!DOCTYPE html>
 <!--
 やること
 		ちょっと検索ダイアログでマーカー追加
@@ -276,10 +276,16 @@
 				}else {
 					// 住所キャッシュの取得
 					var result = GeoHandle.cacheResult[dataRow['住所']];
-					//ジオコーダ取得失敗なら終了
+					
+					//ジオコーダ未取得なら終了
 					if (!result) return;
+					
+					//ジオコーダ取得失敗なら終了
+					if (result.address == GeoHandle.TEXT_FAILED) return;
+					
 					// マーカーが未作成なら作成
 					if (markerArr[id] == null) markerArr[id] = createMarker( result, dataRow); // マーカーを作成
+					
 					// focused // マップの表示領域を拡大する
 					if (isTantouClassed(dataRow['担当者'], 'focused'))mymapExpandBounds(markerArr[id]);
 				}
