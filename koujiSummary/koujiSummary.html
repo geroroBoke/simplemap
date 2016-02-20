@@ -1,6 +1,5 @@
 ﻿  <!--
       createTag関数を任意のattributeの値を指定する形にする createTag(tagName, {aaa:111, bbb:222, ccc:333 ...｝)みたいな引数にする
-      searchBox 検索 スペースを入れるとOR検索で
    -->
 
 <!DOCTYPE html>
@@ -302,12 +301,12 @@
 
     // add elements
     hint.appendDiv(
-      createTag('div', {style: 'width: 60rem;'}, '『' + tantouName + '』の予定'),
-      createTag('textarea', {id: 'placeList', rows:'5', cols: '90'}),
+      createTag('div', {style: 'width: 90rem;'}, '『' + tantouName + '』の予定'),
+      createTag('textarea', {id: 'placeList', rows:'7', cols: '120'}),
       createTag('span', {id:'select', style: 'cursor:pointer;'}, '<<選択>>'),
       createTag('a', {href: 'http://geroro.webcrow.jp/geoHandle/geoHandle.html#' + encodeURI(listText), target: '_blank'}, '地図サイト'),
       createTag('br','',''),
-      createTag('textarea', {id: 'urlText', rows:'1', cols: '90'})
+      createTag('textarea', {id: 'urlText', rows:'1', cols: '120'})
     );
     // textarea innerText
     document.getElementById('placeList').value = listText;

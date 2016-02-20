@@ -8,7 +8,7 @@ html, body{
 	left: 0px;
 	width: 100%;
 	z-index: 1;
-	/*height:9rem*/
+	/*height:10.5rem*/
 }
 #title{
 	position: absolute;
@@ -28,7 +28,7 @@ html, body{
 	font-size: 1.3rem;
 }
 #hint{
-	height: 9rem;
+	height: 10.5rem;
 	width: 100%;
 	line-height: 1.3rem;
 	font-size: 1rem;
@@ -44,7 +44,7 @@ html, body{
 #container{
 	/*overflow: hidden;*/
 	position: absolute;
-	top: 9rem;
+	top: 10.5rem;
 	left:0;
 	width: 100%;
 }
