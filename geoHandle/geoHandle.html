@@ -220,13 +220,14 @@
 		function createMarker( result, dataRow){
 
 			// richMarkerのプロパティ
+			var id = dataRow['住所'];
 			var latlng = result.latlng;
 			var labelText = dataRow['担当者'].match(/[^\d:;#]/) + dataRow['訪問順']; // 吹き出しの中身 	// 数字や記号以外で最初の一文字を取得する
 			var colorText = getTantouCssColorText(dataRow['担当者']);// 吹き出しの色を取得
 			var commentText = result.address; // 横のコメントの内容
 
 			// richMarkerを作成
-			var marker = createRichMarker(latlng, labelText, colorText, commentText);
+			var marker = createRichMarker(id, latlng, labelText, colorText, commentText);
 
 			// クリック時にInfoWindowを作成
 			marker.addListener('click', function(e){
@@ -240,18 +241,20 @@
 		}
 
 		// richMarkerをつくる
-		function createRichMarker(latlng, labelText, colorText, commentText){
+		function createRichMarker(id, latlng, labelText, colorText, commentText){
 
 			// richmarkerのcontentの作成
-			var $contentDiv = $('<div>').append(
-				$('<div>')
-					.attr('class', 'marker')
-					.css({'background-color' : colorText,'border-top-color':  colorText})
-					.text(labelText),
-				$('<div>')
-					.attr('class', 'markerComment')
-					.text(commentText)
-			);
+			var $contentDiv = $('<div>')
+				.attr('id', id)
+				.append(
+					$('<div>')
+						.attr('class', 'marker')
+						.css({'background-color' : colorText,'border-top-color':  colorText})
+						.text(labelText)
+					,$('<div>')
+						.attr('class', 'markerCommentNotFocused')
+						.text(commentText)
+				);
 
 			// マーカーの作成
 			var marker = new RichMarker({
@@ -288,17 +291,19 @@
 		// --------------------------------------------------------------------
 		// マーカーを再描画する
 		function refleshMarker(){
+		
 			//	データの担当者一つ一つに対して
 			kData.data.forEach(function(dataRow, id){
-				// marked OFF
+			
+				// switch(marked)
 				if (!isTantouClassed(dataRow['担当者'], 'marked')){
-					// マーカーの削除
+				
+					// OFFマーカーの削除
 					if(markerArr[id]) markerArr[id].setMap(null);
 					markerArr[id] = null;
-
-				// marked ON
+					
 				}else {
-					// 住所キャッシュの取得
+					// ON 住所キャッシュの取得
 					var result = GeoHandle.cacheResult[dataRow['住所']];
 
 					//ジオコーダ未取得なら終了
@@ -309,9 +314,23 @@
 
 					// マーカーが未作成なら作成
 					if (markerArr[id] == null) markerArr[id] = createMarker( result, dataRow); // マーカーを作成
-
-					// focused // マップの表示領域を拡大する
-					if (isTantouClassed(dataRow['担当者'], 'focused'))mymapExpandBounds(markerArr[id]);
+				}
+				
+				// focused 
+				if (isTantouClassed(dataRow['担当者'], 'focused')){
+					if (markerArr[id] ){
+					
+						// マップの表示領域を拡大する
+						mymapExpandBounds(markerArr[id]);
+						
+						// マーカーのコメント部分にfocusedクラスを付加する
+						markerArr[id].content = markerArr[id].content.replace('markerCommentNotFocused', 'markerCommentFocused');
+					} 
+				}else{
+					if (markerArr[id] ){
+						// マーカーのコメント部分からfocusedクラスを除く
+						markerArr[id].content.replace('markerCommentFocused', 'markerCommentNotFocused');
+					}
 				}
 			});
 		}
