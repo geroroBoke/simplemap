@@ -116,11 +116,11 @@ body, html{
     border-left: 5px solid transparent;
     /*z-index: 2;*/
 }
-.markerCommentNotFocused{
+.markerComment{
   /* display: inline-block; */
   display: none;
 }
-.markerCommentFocused{
+.markerComment.markerFocused{
   display: inline-block;
   position: absolute;
   top: 0px;
@@ -150,8 +150,8 @@ body, html{
   background-color: #fff;
 }
 .tantou.marked{
-  background-color: #eef;
+  background-color: #edf;
 }
 .tantou.focused{
-  background-color: #dfd;
+  background-color: #ffa;
 }

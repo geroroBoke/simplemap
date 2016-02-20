@@ -3,11 +3,6 @@
 やること
 		ちょっと検索ダイアログでマーカー追加
 
-		全て表示するボタンの実装　
-			全て非表示ボタンも実装
-
-		担当一覧のクラス	visible	担当のマーカーが見える状態
-											focused	担当の訪問先一覧が表示されている状態　fixedサイドDivで表示
 		fixedサイドバー
 			dipslay none <>
 			fixedで表示を切り替え
@@ -98,7 +93,7 @@
 				if (!flgNumber ){
 					flgNumber = (arrNumber.indexOf(c) != -1 );
 				} else {
-					//　数字でもなく、区切り文字でもない
+					// 数字でもなく、区切り文字でもない
 					if (arrNumber.indexOf(c) == -1 && arrDelimiter.indexOf(c) == -1  )
 					break;
 				}
@@ -122,7 +117,6 @@
 			kData.getList('担当者', true).forEach(function(element){
 				var $tantouSpan = createTantouSpan(element);
 				$tantouSpan.click(event_TantouSpanClick);
-				$tantouSpan.dblclick(event_TantouSpanDblClick);
 				$tantouContainer.append($tantouSpan);
 			});
 
@@ -171,56 +165,50 @@
 		// --------------------------------------------------------------------
 		// TantouSpanがクリックされた時 markedクラスを付加する
 		function event_TantouSpanClick(event){
+		
+			// 現在のクラス情報をフラグとして取得
+			var flgMarked = $(this).hasClass('marked');
+			var flgFocused = $(this).hasClass('focused');
+			var flgOtherFocused = $(this).siblings().hasClass('focused');
+			
+			// フラグに応じてクラスを遷移する
+			if (!flgMarked && !flgFocused){
+				// nomark > marked
+				$(this).addClass('marked');
+			}
+			//else if (flgMarked && flgOtherFocused){
+			//	// marked and other focused > do nothing
+			//}
+			else if (flgMarked && !flgFocused) {
+				// marked > focused
+				$(this).addClass('focused');
+			}
+			else if (flgMarked && flgFocused) {
+				// focused > nomark	
+				$(this).removeClass('focused');
+				$(this).removeClass('marked');
+			}
 
-			// 他のスパンのfocusedを消す
+			// 他のスパンのfocusedクラスを消す
 			$(this).siblings().removeClass('focused');
-			$(this).removeClass('focused');
 
-			// markedクラスをトグルする
-			$(this).toggleClass('marked');
-
+			
 			// 該当担当者の住所リストを優先キューに入れる
 			if ($(this).hasClass('marked') ) GeoHandle.addAddress(kData.getList('住所', true, '担当者', $(this).attr('id')), true);
+			
+			// フォーカスされていたら表示領域をリセットする
+			if ($(this).hasClass('focused') ) myBounds = null;
 
 			// マーカーをリフレッシュする
 			refleshMarker();
 		};
-		// --------------------------------------------------------------------
-		// event_TantouSpanDblClick
-		// --------------------------------------------------------------------
-		// TantouSpanがクリックされた時
-		function event_TantouSpanDblClick(event){
-
-			// 他のスパンのfocusedを消す
-			$(this).siblings().removeClass('focused');
-
-			// focusedクラスをトグルする
-			$(this).toggleClass('focused');
-
-			// focusedにmarkedクラスも倣う
-			if ($(this).hasClass('focused')){ $(this).addClass('marked');
-			}else{$(this).removeClass('marked');}
-
-			// フォーカス表示ならば
-			if ($(this).hasClass('focused')){
-				// 該当担当者の住所リストを優先キューに入れる
-				GeoHandle.addAddress(kData.getList('住所', true, '担当者', $(this).attr('id')), true);
-				// 表示領域情報を空にする
-				myBounds = null;
-			}
-			// マーカーをリフレッシュする
-			refleshMarker();
-		};
-
-
 		// --------------------------------------------------------------------
 		//  createMarker
 		// --------------------------------------------------------------------
 		// GeoHandleのchacheResultに基づいてマーカーを作成する
-		function createMarker( result, dataRow){
+		function createMarker(id, result, dataRow){
 
 			// richMarkerのプロパティ
-			var id = dataRow['住所'];
 			var latlng = result.latlng;
 			var labelText = dataRow['担当者'].match(/[^\d:;#]/) + dataRow['訪問順']; // 吹き出しの中身 	// 数字や記号以外で最初の一文字を取得する
 			var colorText = getTantouCssColorText(dataRow['担当者']);// 吹き出しの色を取得
@@ -240,7 +228,7 @@
 
 		}
 
-		// richMarkerをつくる
+		// 与えられたプロパティでrichMarkerをつくる
 		function createRichMarker(id, latlng, labelText, colorText, commentText){
 
 			// richmarkerのcontentの作成
@@ -252,7 +240,7 @@
 						.css({'background-color' : colorText,'border-top-color':  colorText})
 						.text(labelText)
 					,$('<div>')
-						.attr('class', 'markerCommentNotFocused')
+						.attr('class', 'markerComment')
 						.text(commentText)
 				);
 
@@ -303,17 +291,16 @@
 					markerArr[id] = null;
 					
 				}else {
-					// ON 住所キャッシュの取得
+					// ON
+					// キャッシュからジオコーダ結果を取得
 					var result = GeoHandle.cacheResult[dataRow['住所']];
-
-					//ジオコーダ未取得なら終了
+					
+					//ジオコーダ未取得もしくは取得失敗なら終了
 					if (!result) return;
-
-					//ジオコーダ取得失敗なら終了
 					if (result.address == GeoHandle.TEXT_FAILED) return;
 
 					// マーカーが未作成なら作成
-					if (markerArr[id] == null) markerArr[id] = createMarker( result, dataRow); // マーカーを作成
+					if (markerArr[id] == null) markerArr[id] = createMarker(id, result, dataRow); // マーカーを作成
 				}
 				
 				// focused 
@@ -324,12 +311,12 @@
 						mymapExpandBounds(markerArr[id]);
 						
 						// マーカーのコメント部分にfocusedクラスを付加する
-						markerArr[id].content = markerArr[id].content.replace('markerCommentNotFocused', 'markerCommentFocused');
+						$('#'+id + '>.markerComment').addClass('markerFocused');
 					} 
 				}else{
 					if (markerArr[id] ){
 						// マーカーのコメント部分からfocusedクラスを除く
-						markerArr[id].content.replace('markerCommentFocused', 'markerCommentNotFocused');
+						$('#'+id + '>.markerComment').removeClass('markerFocused');
 					}
 				}
 			});
