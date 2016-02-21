@@ -36,9 +36,6 @@
 		</div>
 	</div>
 	<div id="main">
-		<div id="top">
-			<div id="status"></div>
-		</div>
 		<div id="middle">
 			<div id="map"></div>
 		</div>
@@ -49,12 +46,18 @@
 	</div>
 	<!-- データ取込フォーム -->
 	<div id="dataDiv">
-		<div id="dataClose">×</div>
+		<div id="dataClose" class="clickable">×</div>
 		<span id="dataTitle">住所データを「タブ区切りのレコード」で入力</span>
 		<p><textarea id="dataText" cols="90" rows="14"></textarea></p>
 		<button id="dataBtnImport" >プロット開始</button>
 		<input type="checkbox" id="dataChkTrim" checked="true"><label for="dataChkTrim">ゴミ文字を削除</label>
 		<input type="checkbox" id="dataChkMansion" checked="true"><label for="dataChkMansion">マンション名削除</label>
+	</div>
+	<!-- 住所切替スライド -->
+	<div id="slideDiv">
+		<span id="slideBackward" class="clickable">←←</span>
+		<span id="slideNowContent"> 現在表示中の住所名 </span>
+		<span id="slideForward" class="clickable">→→</span>
 	</div>
 
 <script>
