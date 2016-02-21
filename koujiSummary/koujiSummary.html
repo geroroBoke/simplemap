@@ -1,6 +1,5 @@
 ﻿  <!--
       createTag関数を任意のattributeの値を指定する形にする createTag(tagName, {aaa:111, bbb:222, ccc:333 ...｝)みたいな引数にする
-      searchBox 検索 スペースを入れるとOR検索で
    -->
 
 <!DOCTYPE html>
@@ -141,7 +140,7 @@
       var search = document.getElementById(idSearch);
       var search_Label = createTag('select', {id: 'search_Label'});
       var search_Value = createTag('input', {id: 'search_Value', type:'text'});
-      
+
       var search_ColorButton = createTag('button', {id: 'search_ColorButton'}, '色つけ');
       search.appendDiv(search_Label, search_Value, search_ColorButton);
 
@@ -151,18 +150,18 @@
       //  search_Label.appendChild(createTag('option', {value: element}, element));
       //});
       var labels = {
-        '住所':'住所', 
-        '依頼販売店':'依頼販売店', 
-        '伝票番号':'受注番号 伝票番号', 
+        '住所':'住所',
+        '依頼販売店':'依頼販売店',
+        '伝票番号':'受注番号 伝票番号',
         'お客様名':'ユーザー名 お客様名',
-        '商品' : '商品 色 工事名１ 工事名２ 工事名３ 工事名４', 
+        '商品' : '商品 色 工事名１ 工事名２ 工事名３ 工事名４',
         '配送メモ': '配送メモ',
-        'JANコード':'JANコード', 
+        'JANコード':'JANコード',
       };
       Object.keys(labels).forEach(function(key){
         search_Label.appendChild(createTag('option', {value: labels[key]}, key))
       });
-      
+
       // フォーカスをボタンに移す
       search_Value.onkeydown=function(e){
         if(e.keyCode == 13) {
@@ -185,33 +184,33 @@
        */
       search_ColorButton.addEventListener('click', clickColorButton);
   }
-  
-  // search_ColorButtonを押したとき    
+
+  // search_ColorButtonを押したとき
   function clickColorButton(){
     var search_Label = document.getElementById('search_Label');
     var search_Value = document.getElementById('search_Value');
 
     // メイン映画を再描画
     drawMainDiv(kData);
-    
+
     // フォーカスを戻しておく
     search_Value.select();
     search_Value.focus();
-    
+
     // 値がなければ終了
     if(!search_Value.value) return;
-    
+
     // スペース区切りで配列を取得
     var labels = search_Label.value.replace(/　/g,' ').split(' ');
     var values = search_Value.value.replace(/　/g,' ').split(' ');
-    
+
     // 配列どれかに一致した受注番号を色づけする
     labels.forEach(function(label){
 	    values.forEach(function(value){
-	      var orders =[]; 
+	      var orders =[];
 	      orders = orders.concat(nData.getList('受注番号', true, label, '*=' + value));
 	      orders = orders.concat(kData.getList('伝票番号', true, label, '*=' + value));
-	      
+
 	      orders.forEach(function(order){
 	        var dom = document.getElementById(order);
 	        if (dom) dom.setAttribute('style', 'background: orange;');
@@ -219,7 +218,7 @@
 	    });
     });
   }
-  
+
   //=============================================================
   // setTitleField
   //=============================================================
@@ -302,13 +301,19 @@
 
     // add elements
     hint.appendDiv(
-      createTag('div', {style: 'width: 60rem;'}, '『' + tantouName + '』の予定'),
-      createTag('textarea', {id: 'placeList', rows:'5', cols: '90'}),
+      createTag('div', {style: 'width: 90rem;'}, '『' + tantouName + '』の予定'),
+      createTag('textarea', {id: 'placeList', rows:'7', cols: '120'}),
       createTag('span', {id:'select', style: 'cursor:pointer;'}, '<<選択>>'),
-      createTag('a', {href: 'http://geroro.webcrow.jp/geoHandle/geoHandle.html#' + encodeURI(listText), target: '_blank'}, '地図サイト')
+      createTag('a', {href: 'http://geroro.webcrow.jp/geoHandle/geoHandle.html#' + encodeURI(listText), target: '_blank'}, '地図サイト'),
+      createTag('br','',''),
+      createTag('textarea', {id: 'urlText', rows:'1', cols: '120'})
     );
     // textarea innerText
-    document.getElementById('placeList').innerHTML = listText;
+    document.getElementById('placeList').value = listText;
+
+    // urlText innerText
+    document.getElementById('urlText').innerText = 'http://geroro.webcrow.jp/geoHandle/geoHandle.html#' + encodeURI(listText);
+
     // addEvent
     document.getElementById('select').addEventListener('click', displayHintTantou_selectAll);
   }
@@ -381,7 +386,7 @@
   // 工事データに基づいてコース情報を作成
   drawMainDiv(kData);
 
-  // サーチボックスを設置する 
+  // サーチボックスを設置する
   setSearchField('search');
 
   // タイトル部分の作成

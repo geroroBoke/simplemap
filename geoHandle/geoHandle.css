@@ -8,7 +8,7 @@ body, html{
   font-size: 13px;
 }
 #side{
-  width:200px;
+  width:140px;
   height:100%;
   float:left;
   line-height: 28px;
@@ -16,7 +16,7 @@ body, html{
   overflow-y: scroll;
 }
 #main{
-  width:calc(100% - 200px);
+  width:calc(100% - 140px);
   height:100%;
   float:right;
 }
@@ -43,7 +43,7 @@ body, html{
   position:fixed;
   text-align: center;
   top: 10px;
-  left: 200px;
+  left: 140px;
   padding: 10px 10px;
   border-radius:10px;
   background: Honeydew;
@@ -69,7 +69,7 @@ body, html{
   position:fixed;
   text-align: center;
   top: 10px;
-  left: 200px;
+  left: 140px;
   padding: 10px 10px;
   border-radius:5px;
   background: Honeydew;
@@ -86,13 +86,13 @@ body, html{
   color:#fff;
   font-family: Arial, sans-serif;
   font-size: 15px;
-  text-align: center;
   font-weight: bold;
+  text-align: center;
   border-radius: 45%;
   width: 32px;
   height: 20px;
   line-height: 20px;
-  box-shadow: 1px 1px 3px 0 rgba(0,0,0,0.5);
+  /*box-shadow: 1px 1px 3px 0 rgba(0,0,0,0.5);*/
   background-color:hsla(360, 50%, 50%, 1);
   border-color:  hsla(360, 50%, 50%, 1);
   /*opacity: 0.7;*/
@@ -117,20 +117,26 @@ body, html{
     /*z-index: 2;*/
 }
 .markerComment{
+  /* display: inline-block; */
+  display: none;
+}
+.markerComment.markerFocused{
   display: inline-block;
   position: absolute;
   top: 0px;
   left: 36px;
-  color:#000;
   font-family: Arial, sans-serif;
   font-size: 11px;
-  margin:auto;
+  /*font-weight: bold;*/
+  color:#333;
   text-shadow:  0 -1px 1px #FFF, -1px 0 1px #FFF, 1px 0 1px #FFF;
+  margin:auto;
   height: 20px;
   line-height: 20px;
-  width: 200px;
+  width: 140px;
   overflow: hidden;
 }
+
 .tantou{
   margin: 8px auto;
   display:block;
@@ -143,6 +149,9 @@ body, html{
   cursor: pointer;
   background-color: #fff;
 }
-.selected{
-  background-color: #ddf;
+.tantou.marked{
+  background-color: #edf;
+}
+.tantou.focused{
+  background-color: #ffa;
 }

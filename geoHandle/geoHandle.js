@@ -1,11 +1,12 @@
 //  TODO
 
 //////////////////////////////////////////////////////////////////////
-// Class Geohandle
+// geoHandle.js
 //          require ttp://maps.google.com/maps/api/js?language=ja
 //          require optinal window.localStorage
 //          require optinal window.JSON
 //////////////////////////////////////////////////////////////////////
+
 'use strict'
 var GeoHandle ={
   geocoder:{},
@@ -13,11 +14,12 @@ var GeoHandle ={
   cacheResult:{},   //連想配列オブジェクト　キーは登録時の住所文字列
                     //プロパティにはlatlng:{lat:0,lng:0}, address:""
   nowRequest: "",   //検索中の住所
-  onLocate:false,	  //アイテムが取得される度に呼ばれるcallback(geocoderResult)
+  onLocate: false,	  //アイテムが取得される度に呼ばれるcallback(geocoderResult)
   dummy:'',
   urgentCount:0,  //急ぎのアイテムの数
   TIME_QUERYOVER: 300,
   TIME_NOTURGENT: 1200,
+  TEXT_FAILED:'geocoder failed'
 };
 
 //	初期化する
@@ -121,12 +123,7 @@ GeoHandle.onGetResult = function(request, result){
 
   // 次の検索を開始する
   GeoHandle.doNextSearch();
-  // if(GeoHandle.urgentCount){
-  //   GeoHandle.doNextSearch();// 急ぎならすぐに
-  // }else{
-  //   急ぎでなければちょっと間をおいて行う
-  //   setTimeout(GeoHandle.doNextSearch, GeoHandle.TIME_NOTURGENT);　
-  // }
+  
 }
 
 //geocode callback
@@ -180,19 +177,16 @@ GeoHandle.getResultIfStatusOK =function(results, status){
       saveResult['latlng'] = results[0].geometry.location;
       saveResult['address'] = GeoHandle.getGcrAddressText(results[0]);
       return saveResult;
+      
     case google.maps.GeocoderStatus.OVER_QUERY_LIMIT:
     //  クエリーを出しすぎて怒られた場合
       return false;　        // falseでリターンする
+      
     default:
     // その他エラーの場合 // TODO エラー処理を書く
-      return GeoHandle.getEmptyResult();// 失敗用のデータをcacheに格納
+      //return GeoHandle.getEmptyResult();// 失敗用のデータをcacheに格納
+      return {latlng: new google.maps.LatLng(), address: GeoHandle.TEXT_FAILED};
   }
-}
-
-//  失敗したときの空のGoogleGeocoderResultをかえす
-GeoHandle.getEmptyResult = function(){
-  //return false;
-  return ;//{latlng:"failed!", address:"failed!"};
 }
 
 //GeocodeResultから適度長さの（市町村以下の）住所名を取得する
@@ -212,7 +206,7 @@ GeoHandle.getGcrAddressText = function(gcResult){
     }else {
         stradr = lname + stradr;    //それ以外は普通に追加する
     }
-
+    
     // 番地以上のものをいれたらそこで終わりにする
     if (stradr.length > 0 &&
       cmpnt.types[0].match(/sublocality_level_[2-9]/)==null) break;

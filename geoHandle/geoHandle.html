@@ -1,13 +1,8 @@
-<!DOCTYPE HTML>
+<!DOCTYPE html>
 <!--
 やること
 		ちょっと検索ダイアログでマーカー追加
 
-		全て表示するボタンの実装　
-			全て非表示ボタンも実装
-
-		担当一覧のクラス	visible	担当のマーカーが見える状態
-											focused	担当の訪問先一覧が表示されている状態　fixedサイドDivで表示
 		fixedサイドバー
 			dipslay none <>
 			fixedで表示を切り替え
@@ -23,6 +18,7 @@
 <head>
 	<title>地図プロット</title>
 	<meta charset="utf-8">
+	<meta name="viewport" content="width=device-width; initial-scale=1">
 	<link rel="stylesheet" href="geoHandle.css" type="text/css">
 	<script src="http://maps.google.com/maps/api/js?language=ja"></script>
 	<script src="https://google-maps-utility-library-v3.googlecode.com/svn-history/r213/trunk/richmarker/src/richmarker-compiled.js"></script>
@@ -34,7 +30,7 @@
 <body>
 	<div id="side">
 		<div id="toggle">
-			<button id="toggleBtn" >データ取込フォーム</button>
+			<button id="toggleBtn" >データ取込</button>
 		</div>
 		<div id="tantouContainer">
 		</div>
@@ -97,20 +93,19 @@
 				if (!flgNumber ){
 					flgNumber = (arrNumber.indexOf(c) != -1 );
 				} else {
-					//　数字でもなく、区切り文字でもない
+					// 数字でもなく、区切り文字でもない
 					if (arrNumber.indexOf(c) == -1 && arrDelimiter.indexOf(c) == -1  )
 					break;
 				}
 			}
-			//if (i != str.length) console.log(str.substr(0,i) + ':' + str.substr(i, str.length - i));
 			return str.substr(0, i);
 		}
 
 		// --------------------------------------------------------------------
-		//  settantouContainer
+		//  setTantouContainer
 		// --------------------------------------------------------------------
 		// 担当者ボックスを初期化する
-		function settantouContainer(){
+		function setTantouContainer(){
 
 			// エレメントの取得
 			var $tantouContainer = $('#tantouContainer');
@@ -129,7 +124,6 @@
 			var $selallSpan = createTantouSpan('すべて表示');
 			$selallSpan.click(event_SelallSpanClick);
 			$tantouContainer.append($selallSpan);
-
 		}
 
 		// 担当者の名前一覧のspanをつくる
@@ -140,23 +134,25 @@
 			return $span;
 		}
 
-		// 担当者の名前が選択されているか判別する
-		function isTantouSpanSelected(tantou){
-			return $('#' + tantou.replace(':', '\\:')).hasClass('selected');
+		// 担当者スパンに特定のクラスが付いているか判別する
+		function isTantouClassed(tantou, classname){
+			return $('#' + tantou.replace(':', '\\:')).hasClass(classname);
 		}
-
+		// --------------------------------------------------------------------
+		// event_SelallSpanClick
+		// --------------------------------------------------------------------
 		// すべてを表示ボタンがクリックされた時
 		function event_SelallSpanClick(event){
-			// すべて表示ボタンの選択状態を取得
-			var nowSelected = $(this).hasClass('selected');
 
-			// 担当ボックスすべてに対して状態とは逆の値をセットする
-			$('#tantouContainer > .tantou').each(function(){
-				if ( !nowSelected ){
-					$(this).addClass('selected');
-				}else{
-					$(this).removeClass('selected');
-			}});
+			// 他のスパンのfocusedを消す
+			$(this).siblings().removeClass('focused');
+
+			// すべて表示ボタンの選択状態をトグル
+			$(this).toggleClass('marked');
+
+			// 他の要素もすべて表示ボタンに倣う
+			if ($(this).hasClass('marked')){ $(this).siblings().addClass('marked');
+			}else {$(this).siblings().removeClass('marked');}
 
 			// 表示領域情報をを現在の表示と一致させる
 			myBounds = map.getBounds();
@@ -164,32 +160,64 @@
 			// マーカーをリフレッシュする
 			refleshMarker();
 		}
-
-		// TantouSpanがクリックされた時
+		// --------------------------------------------------------------------
+		// event_TantouSpanClick
+		// --------------------------------------------------------------------
+		// TantouSpanがクリックされた時 markedクラスを付加する
 		function event_TantouSpanClick(event){
-			// selectedクラスをトグルする
-			$(this).toggleClass('selected');
+		
+			// 現在のクラス情報をフラグとして取得
+			var flgMarked = $(this).hasClass('marked');
+			var flgFocused = $(this).hasClass('focused');
+			var flgOtherFocused = $(this).siblings().hasClass('focused');
+			
+			// フラグに応じてクラスを遷移する
+			if (!flgMarked && !flgFocused){
+				// nomark > marked
+				$(this).addClass('marked');
+			}
+			//else if (flgMarked && flgOtherFocused){
+			//	// marked and other focused > do nothing
+			//}
+			else if (flgMarked && !flgFocused) {
+				// marked > focused
+				$(this).addClass('focused');
+			}
+			else if (flgMarked && flgFocused) {
+				// focused > nomark	
+				$(this).removeClass('focused');
+				$(this).removeClass('marked');
+			}
 
+			// 他のスパンのfocusedクラスを消す
+			$(this).siblings().removeClass('focused');
+
+			
 			// 該当担当者の住所リストを優先キューに入れる
-			GeoHandle.addAddress(kData.getList('住所', true, '担当者', $(this).attr('id')), true);
-
-			// 表示領域情報をを現在の表示と一致させる
-			myBounds = map.getBounds();
+			if ($(this).hasClass('marked') ) GeoHandle.addAddress(kData.getList('住所', true, '担当者', $(this).attr('id')), true);
+			
+			// フォーカスされていたら表示領域をリセットする
+			if ($(this).hasClass('focused') ) myBounds = null;
 
 			// マーカーをリフレッシュする
 			refleshMarker();
 		};
-
 		// --------------------------------------------------------------------
 		//  createMarker
 		// --------------------------------------------------------------------
 		// GeoHandleのchacheResultに基づいてマーカーを作成する
-		function createMarker( result, dataRow){
+		function createMarker(id, result, dataRow){
 
-			// richMarkerをつくる
-			var marker = createRichMarker( result, dataRow);
+			// richMarkerのプロパティ
+			var latlng = result.latlng;
+			var labelText = dataRow['担当者'].match(/[^\d:;#]/) + dataRow['訪問順']; // 吹き出しの中身 	// 数字や記号以外で最初の一文字を取得する
+			var colorText = getTantouCssColorText(dataRow['担当者']);// 吹き出しの色を取得
+			var commentText = result.address; // 横のコメントの内容
 
-			// InfoWindowをつくってイベントに紐付けする
+			// richMarkerを作成
+			var marker = createRichMarker(id, latlng, labelText, colorText, commentText);
+
+			// クリック時にInfoWindowを作成
 			marker.addListener('click', function(e){
 				var info = createInfoWindow(dataRow);
 				info.open(map, marker);
@@ -200,29 +228,25 @@
 
 		}
 
-		// richMarkerをつくる
-		function createRichMarker( result, dataRow){
-
-			// 吹き出しに表示するテキストを設定
-			var labelText = dataRow['担当者'].substr(4,1) + dataRow['訪問順']; // var labelText = dataRow['訪問順'];
-
-			// 吹き出しの色を取得
-			var colorText = getTantouCssColorText(dataRow['担当者']);
+		// 与えられたプロパティでrichMarkerをつくる
+		function createRichMarker(id, latlng, labelText, colorText, commentText){
 
 			// richmarkerのcontentの作成
-			var $contentDiv = $('<div>').append(
-				$('<div>')
-					.attr('class', 'marker')
-					.css({'background-color' : colorText,'border-top-color':  colorText})
-					.text(labelText),
-				$('<div>')
-					.attr('class', 'markerComment')
-					.text(result.address)
-			);
+			var $contentDiv = $('<div>')
+				.attr('id', id)
+				.append(
+					$('<div>')
+						.attr('class', 'marker')
+						.css({'background-color' : colorText,'border-top-color':  colorText})
+						.text(labelText)
+					,$('<div>')
+						.attr('class', 'markerComment')
+						.text(commentText)
+				);
 
 			// マーカーの作成
 			var marker = new RichMarker({
-				position: result.latlng,
+				position: latlng,
 				map: map,
 				flat: true,		//true推奨
 				content: $contentDiv[0].outerHTML,
@@ -255,26 +279,49 @@
 		// --------------------------------------------------------------------
 		// マーカーを再描画する
 		function refleshMarker(){
+		
 			//	データの担当者一つ一つに対して
 			kData.data.forEach(function(dataRow, id){
-				// ------表示ONのリストに名前があれば
-				if (isTantouSpanSelected(dataRow['担当者'])){
-						// 住所キャッシュの取得
-						var result = GeoHandle.cacheResult[dataRow['住所']];
-						//ジオコーダ取得失敗なら終了
-						if (!result) return;
-						// マーカーが未作成なら作成
-						if (markerArr[id] == null) markerArr[id] = createMarker( result, dataRow); // マーカーを作成
+			
+				// switch(marked)
+				if (!isTantouClassed(dataRow['担当者'], 'marked')){
+				
+					// OFFマーカーの削除
+					if(markerArr[id]) markerArr[id].setMap(null);
+					markerArr[id] = null;
+					
+				}else {
+					// ON
+					// キャッシュからジオコーダ結果を取得
+					var result = GeoHandle.cacheResult[dataRow['住所']];
+					
+					//ジオコーダ未取得もしくは取得失敗なら終了
+					if (!result) return;
+					if (result.address == GeoHandle.TEXT_FAILED) return;
+
+					// マーカーが未作成なら作成
+					if (markerArr[id] == null) markerArr[id] = createMarker(id, result, dataRow); // マーカーを作成
+				}
+				
+				// focused 
+				if (isTantouClassed(dataRow['担当者'], 'focused')){
+					if (markerArr[id] ){
+					
 						// マップの表示領域を拡大する
 						mymapExpandBounds(markerArr[id]);
-				// ------表示ONのリストに名前がなければ
-				}else {
-						// マーカーの削除
-						if(markerArr[id]) markerArr[id].setMap(null);
-						markerArr[id] = null;
+						
+						// マーカーのコメント部分にfocusedクラスを付加する
+						$('#'+id + '>.markerComment').addClass('markerFocused');
+					} 
+				}else{
+					if (markerArr[id] ){
+						// マーカーのコメント部分からfocusedクラスを除く
+						$('#'+id + '>.markerComment').removeClass('markerFocused');
+					}
 				}
 			});
 		}
+
 		// 指定マーカーに合わせてマップの表示領域を拡大する
 		function mymapExpandBounds(marker){
 			//var curBounds = myBounds;
@@ -290,8 +337,11 @@
 		// --------------------------------------------------------------------
 		// 渡されたテキストをパースして地図プロットする
 		function importData(dataText, isTrimGarbage, isTrimMansion){
-			// 指定がなければのdataTextエレメントのテキストでパースする
+
+			// テキストが空なら終了
 			if (!dataText) return;
+
+			// テキストをパースする
 			var data = dataHandle.csvParse(dataText, '\t', true);
 
 			// 正しいフィールドを持っているか確認
@@ -312,23 +362,23 @@
 			if (isTrimGarbage){data.data.forEach(function(row){row['住所'] = trimGarbage(row['住所']);});}
 			if (isTrimMansion){data.data.forEach(function(row){row['住所'] = trimMansionOrlater(trimGarbage(row['住所']));});}
 
-			// 問題なければ新しいデータでマップの初期化を行う
-			init(data);
-		}
+			// dataをプロット用のデータとして採用する
+			kData = data;
 
+			// 新しいデータでマップの初期化をしなおす
+			init();
+		}
 
 		// --------------------------------------------------------------------
 		//  init
 		// --------------------------------------------------------------------
-		// 渡されたデータをプロットデータとしてkDataを初期化
 		// 担当者ボックスを初期化する、マーカーを初期化する
-		function init(data){
-
-			// 引数のデータを工事データ配列格納
-			kData = data;
+		function init(){
+			// データがなければ終了
+			if (!kData) return;
 
 			// 担当者ボックスの初期化
-			settantouContainer();
+			setTantouContainer();
 
 			// 全マーカの削除
 			for (var i = 0; i < markerArr.length ; i++){
@@ -350,38 +400,67 @@
 			refleshMarker();
 		}
 
-
 		// --------------------------------------------------------------------
 		//  dataDiv
 		// --------------------------------------------------------------------
+		// dataDivの表示・非表示を切り返す
 		function toggleDataDiv(){
+			// DOMの取得
 			var $dataDiv = $('#dataDiv');
 			var $dataText = $('#dataText');
+
+			// 表示・非表示を切り替える
 			$dataDiv.toggle();
+
+			// 表示ＯＮならテキストにフォーカス等の操作をする
 			if($dataDiv.is(':visible')){
 				setTimeout(function(){
+					// 現在のデータをCSVにして再表示
+					if (kData) $dataText.text(dataHandle.csvOutput(kData.data, '\t'));
 					$dataText.focus();
-					$dataText.text('');
+					$dataText.append('');
 				}, 1);
 			}
 		}
-		// データ取込フォーム　dataDiv関連のイベントを設定する
+		// データ取込フォーム dataDiv関連のイベントを設定する
 		function setDataDivEvents(){
 			$('#dataBtnImport').click(function(){
 				toggleDataDiv();
 				importData($('#dataText').val(), $('#dataChkTrim').prop('checked'), $('dataChkMansion').prop('checked'));
 			});
-			$('#toggleBtn').mousedown(toggleDataDiv);
+			$('#toggleBtn').click(toggleDataDiv);
 			$('#dataClose').click(toggleDataDiv)
 		}
+		// サーチボックス 検索場所に新しくマーカーを立てる
+		function setSearchDivEvents(){
+			$('#searchButton').click(function(){
+				var addData = {};
+				addData['担当者'] = '他';
+				addData['訪問順'] = '';
+				addData['住所'] = $('#searchText').val();
+				if (!kData){
+					kData = new dataHandle.ObjectArray([ addData]);
+				}else{
+					kData.data.push(addData);
+				}
+
+				// マップを初期化し直す
+				// TODO イニットではなくリフレッシュ的なやつを考える
+				init();
+			});
+		}
+
 		// --------------------------------------------------------------------
 		//  main
 		// --------------------------------------------------------------------
 		// 取り込みボタンのイベントを設定する
 		setDataDivEvents();
 
-		// 工事データ配列 init関数で初期化される
-		var kData = [];
+		// 検索ボタンのイベントを設定する
+		setSearchDivEvents();
+
+		// data ObjectArray オブジェクト dataImportないで初期化される
+		var kData;
 
 		// マーカー配列を用意
 		var markerArr = [];
@@ -389,15 +468,13 @@
 		// マップの表示領域を格納する
 		var myBounds = new google.maps.LatLngBounds();
 
-		// マップの初期表示を定める
+		// googleマップの読込み
 		var mapCenter = {lat:35.5, lng:139.6};
 		var	mapzoom = 14;
+		var map = new google.maps.Map($('#map')[0], {center:mapCenter,zoom:mapzoom});
 
 		// geocoderキャッシュ管理オブジェクトを初期化
 		GeoHandle.init();
-
-		// googleマップの読込み
-		var map = new google.maps.Map($('#map')[0], {center:mapCenter,zoom:mapzoom});
 
 		// 呼出パラメータでマップを生成する
 		if (location.hash.length >= 0){
