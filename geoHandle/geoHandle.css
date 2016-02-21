@@ -83,24 +83,30 @@ body, html{
   left: 0;
   right: 0;
   margin: 0 auto;
-  top: calc(100% - 3rem);
-  width: 600px;
-  height: 2rem;
+  top: calc(100% - 2.7rem);
+  width: 100%;
+  max-width: 400px;
+  height: 2.4rem;
   font-size: 1rem;
   text-align: center;
-  line-height: 2rem;
+  line-height: 2.4rem;
   background: #ffd;
+  overflow: hidden;
+  opacity: 0.6;
 }
 
 #slideNowContent{
+  display: inline-block;
+  overflow: hidden;
+  max-width:250px;
 }
 #slideForward{
-  width:100px;
+  width:50px;
   float:right;
   background: #dfd;
 }
 #slideBackward{
-  width:100px;
+  width:50px;
   float:left;
   background: #dfd;
 }
