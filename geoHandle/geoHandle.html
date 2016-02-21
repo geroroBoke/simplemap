@@ -139,8 +139,10 @@
 
 		// 担当者スパンに特定のクラスが付いているか判別する
 		function isTantouClassed(tantou, classname){
+			if (typeof tantou !== 'string') return false;
 			return $('#' + tantou.replace(':', '\\:')).hasClass(classname);
 		}
+		
 		// --------------------------------------------------------------------
 		// event_SelallSpanClick
 		// --------------------------------------------------------------------
@@ -406,6 +408,15 @@
 		// --------------------------------------------------------------------
 		//  dataDiv
 		// --------------------------------------------------------------------
+		// データ取込フォーム dataDiv関連のイベントを設定する
+		function setDataDivEvents(){
+			$('#dataBtnImport').click(function(){
+				toggleDataDiv();
+				importData($('#dataText').val(), $('#dataChkTrim').prop('checked'), $('dataChkMansion').prop('checked'));
+			});
+			$('#toggleBtn').click(toggleDataDiv);
+			$('#dataClose').click(toggleDataDiv)
+		}
 		// dataDivの表示・非表示を切り返す
 		function toggleDataDiv(){
 			// DOMの取得
@@ -424,16 +435,10 @@
 					$dataText.append('');
 				}, 1);
 			}
-		}
-		// データ取込フォーム dataDiv関連のイベントを設定する
-		function setDataDivEvents(){
-			$('#dataBtnImport').click(function(){
-				toggleDataDiv();
-				importData($('#dataText').val(), $('#dataChkTrim').prop('checked'), $('dataChkMansion').prop('checked'));
-			});
-			$('#toggleBtn').click(toggleDataDiv);
-			$('#dataClose').click(toggleDataDiv)
-		}
+		}		
+		// --------------------------------------------------------------------
+		//  searchDiv
+		// --------------------------------------------------------------------
 		// サーチボックス 検索場所に新しくマーカーを立てる
 		function setSearchDivEvents(){
 			$('#searchButton').click(function(){
@@ -446,11 +451,47 @@
 				}else{
 					kData.data.push(addData);
 				}
-
 				// マップを初期化し直す
 				// TODO イニットではなくリフレッシュ的なやつを考える
 				init();
 			});
+		}
+		
+		// --------------------------------------------------------------------
+		// slideDiv
+		// --------------------------------------------------------------------
+		// 切替スライドのイベントを設定する
+		function setSlideDivEvents(){
+			$('#slideForward').click(function(){manageSlide(1);});
+			$('#slideBackward').click(function(){manageSlide(-1);});
+			
+			// inner function
+			// スライドの表示IDを管理・反映
+			function manageSlide(increment){
+				// データがなければ終了
+				if (!kData) return;
+
+				// 状態変数の初期化
+				if (typeof manageSlide.selectId === 'undefined'){
+					manageSlide.selectId = 0;
+				
+				// focusedになっている担当スパンを取得
+				var focused = kData.getList('担当者', true).filter(function(tantou){
+					return isTantouClassed(tantou, 'focused');
+				});
+				
+				// focused担当者の住所一覧を訪問順で取得
+				var addressArr = kData.getList('住所', true, '担当者', focused, '訪問順', true)
+
+				}
+				// 状態変数増減させる
+				manageSlide.selectId += increment;
+				if (manageSlide.selectId < 0)  manageSlide.selectId = 0;
+				if (manageSlide.selectId > addressArr.length) manageSlide.selectId = addressArr.length;
+				
+				// slideNowContentに表示させる
+				if (focused){$('#slideNowContent').text(addressArr[manageSlide.selectId]);}
+			}
 		}
 
 		// --------------------------------------------------------------------
@@ -461,6 +502,9 @@
 
 		// 検索ボタンのイベントを設定する
 		setSearchDivEvents();
+		
+		// 切替スライドのイベントを設定する
+		setSlideDivEvents();
 
 		// data ObjectArray オブジェクト dataImportないで初期化される
 		var kData;

@@ -84,18 +84,25 @@ body, html{
   right: 0;
   margin: 0 auto;
   top: calc(100% - 3rem);
-  width: calc(100%);
+  width: 600px;
   height: 2rem;
+  font-size: 1rem;
   text-align: center;
-  font-size: 2rem;
   line-height: 2rem;
-  background: #ddf;
+  background: #ffd;
 }
 
 #slideNowContent{
-  display: inline-block;
-  width: 400px;
-  max-width: 400px;
+}
+#slideForward{
+  width:100px;
+  float:right;
+  background: #dfd;
+}
+#slideBackward{
+  width:100px;
+  float:left;
+  background: #dfd;
 }
 
 @keyframes anime1{
