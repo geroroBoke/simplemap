@@ -406,7 +406,7 @@
 		function setDataDivEvents(){
 			$('#dataBtnImport').click(function(){
 				toggleDataDiv();
-				importData($('#dataText').val(), $('#dataChkTrim').prop('checked'), $('dataChkMansion').prop('checked'));
+				importData($('#dataText').val(), $('#dataChkTrim').prop('checked'), $('#dataChkMansion').prop('checked'));
 			});
 			$('#toggleBtn').click(toggleDataDiv);
 			$('#dataClose').click(toggleDataDiv)
@@ -526,7 +526,7 @@
 
 		// 呼出パラメータでマップを生成する
 		if (location.hash.length >= 0){
-			importData(decodeURI(location.hash.substring(1)));
+			importData(decodeURI(location.hash.substring(1)), true ,true);// default true true
 		}
 	})();
 
