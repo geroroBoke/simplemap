@@ -6,6 +6,7 @@ body, html{
   border: 0;
   margin: 0;
   font-size: 13px;
+  font-family: Arial, sans-serif;
 }
 #side{
   width:140px;
@@ -68,7 +69,6 @@ body, html{
 }
 
 #searchDiv{
-  display: none; /*TODO*/
   position: fixed;
   text-align: center;
   top: 10px;
@@ -76,6 +76,8 @@ body, html{
   padding: 10px 10px;
   border-radius:5px;
   background: Honeydew;
+
+  display: none; /*TODO*/
 }
 
 #slideDiv{
@@ -83,16 +85,18 @@ body, html{
   left: 0;
   right: 0;
   margin: 0 auto;
-  top: calc(100% - 2.7rem);
+  top: calc(100% - 3rem);
   width: 100%;
   max-width: 400px;
-  height: 2.4rem;
+  height: 2.8rem;
   font-size: 1rem;
   text-align: center;
-  line-height: 2.4rem;
+  line-height: 2.8rem;
   background: #ffd;
   overflow: hidden;
-  opacity: 0.6;
+  opacity: 0.7;
+
+  display: none;
 }
 
 #slideNowContent{
@@ -121,7 +125,7 @@ body, html{
   position: relative;
   color:#fff;
   font-family: Arial, sans-serif;
-  font-size: 15px;
+  font-size: 14px;
   font-weight: bold;
   text-align: center;
   border-radius: 45%;
