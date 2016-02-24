@@ -56,9 +56,16 @@
 	</div>
 	<!-- 住所切替スライド -->
 	<div id="slideDiv">
-		<span id="slideBackward" class="clickable">←←</span>
-		<span id="slideNowContent"> 現在表示中の住所名 </span>
-		<span id="slideForward" class="clickable">→→</span>
+		<div id="slideFirstLine">
+			<span id="slideShowList" class="clickable">一覧</span>
+			<span id="slideNowTantou"> 現在表示中の担当者</span>
+			<span id="slideFitsAll" class="clickable">全体</span>
+		</div>
+		<div id="slideSecondLine">
+			<span id="slideBackward" class="clickable">back</span>
+			<span id="slideNowContent"> 現在表示中の住所名 </span>
+			<span id="slideForward" class="clickable">next</span>
+		</div>
 	</div>
 
 <script>
@@ -446,8 +453,9 @@
 		function setSlideDivEvents(){
 			$('#slideForward').click(function(){manageSlide(1);});
 			$('#slideBackward').click(function(){manageSlide(-1);});
-
+			$('#slideFitsAll').click(function(){fitMapBoundsFocusedMarkers();});
 		}
+		
 		// スライドの表示IDを管理・反映
 		function manageSlide(increment, isReset){
 			// データがなければ終了
@@ -475,12 +483,65 @@
 
 			// slideNowContentに表示させる
 			if (focused){$('#slideNowContent').text((manageSlide.id + 1) + ':' + address);}
-
-			// 座標の取得
+			
+			// slideNowTantouに情報を表示
+			if (focused){
+				$('#slideNowTantou').empty();
+				$('#slideNowTantou').append($('<span>').css('background-color', getTantouCssColorText(focused[0])).text('__'));
+				$('#slideNowTantou').append(focused[0]);
+			}
+			
+			// 座標の変更
 			var result = GeoHandle.cacheResult[address];
 			if ( !result || result.address == GeoHandle.TEXT_FAILED) return;
 			map.setCenter(result.latlng);
+		}
+		
+		//focused中のマーカーを表示するようにマップの表示領域を変更する
+		function fitMapBoundsFocusedMarkers(){
+			// マーカーが一つでもある場合trueになる
+			var flgMarkerFound = false;
+		
+			//	データの担当者一つ一つに対して
+			kData.data.forEach(function(dataRow, id){
+				if (isTantouClassed(dataRow['担当者'], 'focused')){
+					if (markerArr[id]){
+						// 一つ目の場合、myBoundを初期化
+						if (!flgMarkerFound) myBounds = null;
+						flgMarkerFound = true;
+						
+						//表示領域を広げる
+						mymapExpandBounds(markerArr[id]);
+					}
+				}
+			});
+		}
 
+		
+		
+		// --------------------------------------------------------------------
+		function getMyMapOption(){
+		
+			// TODO リテラルをここに書くのか
+			var mapCenter = {lat:35.5, lng:139.6};
+			var	mapzoom = 14;
+
+			return {
+				center:mapCenter, 
+				zoom:mapzoom, 
+				mapTypeControl:false,
+				streetViewControlOptions:{
+					position: google.maps.ControlPosition.RIGHT_CENTER,
+				},
+				zoomControlOptions:{
+					position: google.maps.ControlPosition.RIGHT_CENTER, 
+					style:google.maps.ZoomControlStyle.LARGE
+				},
+				scaleControl: true,
+	  		scaleControlOptions: {
+	    	position: google.maps.ControlPosition.BOTTOM_LEFT
+	  		},
+			};
 		}
 
 		// --------------------------------------------------------------------
@@ -505,9 +566,7 @@
 		var myBounds = new google.maps.LatLngBounds();
 
 		// googleマップの読込み
-		var mapCenter = {lat:35.5, lng:139.6};
-		var	mapzoom = 14;
-		var map = new google.maps.Map($('#map')[0], {center:mapCenter,zoom:mapzoom});
+		var map = new google.maps.Map($('#map')[0], getMyMapOption());
 
 		// geocoderキャッシュ管理オブジェクトを初期化
 		GeoHandle.init();
