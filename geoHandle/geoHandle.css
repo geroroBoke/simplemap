@@ -8,32 +8,26 @@ body, html{
   font-size: 13px;
   font-family: Arial, sans-serif;
 }
-#side{
-  width:140px;
-  height:100%;
-  float:left;
-  line-height: 28px;
-  overflow-x: hidden;
-  overflow-y: scroll;
-}
+
 #main{
-  width:calc(100% - 140px);
-  height:100%;
-  float:right;
-}
-#top{
   width:100%;
-  height:11px;
-  font-size:9px;
+  height:100%;
 }
 #middle{
   width:100%;
   height:100%;
 }
-
 #map{
   width:100%;
   height:100%;
+}
+#sideDiv{
+  position:fixed;
+  top:0px;
+  left:0px;
+  width:140px;
+  line-height: 28px;
+  overflow-x: hidden;
 }
 #menuDiv{
   line-height: 1.4rem;
@@ -49,9 +43,7 @@ body, html{
   border-radius:10px;
   background: Honeydew;
   /*visibility: hidden;*/
-
   display:none;
-
 }
 #dataClose{
   width: 1.8rem;
@@ -60,15 +52,8 @@ body, html{
   font-size: 1.8rem;
   line-height: 1.8rem;
 }
-.clickable{
-  cursor: pointer;
-}
-.clickable:hover{
-  color:blue;
-  font-weight:bold;
-  opacity: .5;
-}
 
+/*    */
 #searchDiv{
   position: fixed;
   text-align: center;
@@ -81,6 +66,7 @@ body, html{
   display: none; /*TODO*/
 }
 
+/*  slideDiv  */
 #slideDiv{
   position: absolute;
   left: 0;
@@ -90,8 +76,6 @@ body, html{
   bottom: 1rem;
   width: 100%;
   max-width: 400px;
-  height: 5rem;
-  font-size: 1rem;
   text-align: center;
   background: #ffd;
   overflow: hidden;
@@ -101,46 +85,47 @@ body, html{
 #slideFirstLine{
 	margin: 0;
 	padding: 0;
-	height: 2rem;
-	line-height: 2rem;
-	background: #ddf;
+	height: 2.5rem;
+	line-height:2.5rem;
 }
-	#slideNowTantou{
-	  display: inline-block;
-	  overflow: hidden;
-	  max-width:250px;
-	}
-	#slideFitsAll{
-	  width:50px;
-	  float:right;
-	  background: #fdd;
-	}
-	#slideShowList{
-	  width:50px;
-	  float:left;
-	  background: #fdd;
-	}
 #slideSecondLine{
 	margin: 0;
 	padding: 0;
-	height: 3rem;
-	line-height:3rem;
+	height: 2.5rem;
+	line-height:2.5rem;
 }
-	#slideNowContent{
-	  display: inline-block;
-	  overflow: hidden;
-	  max-width:250px;
-	}
-	#slideForward{
-	  width:50px;
-	  float:right;
-	  background: #dfd;
-	}
-	#slideBackward{
-	  width:50px;
-	  float:left;
-	  background: #dfd;
-	}
+#slideNowTantou{
+  display: inline-block;
+  overflow: hidden;
+  max-width:250px;
+}
+
+#slideNowContent{
+  display: inline-block;
+  overflow: hidden;
+  max-width:250px;
+}
+#slideForward{
+  width:50px;
+  float:right;
+  background: #dfd;
+}
+#slideBackward{
+  width:50px;
+  float:right;
+  background: #dfd;
+}
+/*    */
+#switchDiv{
+  position: fixed;
+  top: 1rem;
+  right: 4rem;
+}
+#switchDiv select{
+  font-size: 1.5rem;
+  min-width: 10rem;
+}
+
 
 @keyframes anime1{
   0%{background-color: aqua;}
@@ -203,7 +188,9 @@ body, html{
   width: 140px;
   overflow: hidden;
 }
-
+#tantouDiv{
+  display:none;
+}
 .tantou{
   margin: 8px auto;
   display:block;
@@ -221,4 +208,13 @@ body, html{
 }
 .tantou.focused{
   background-color: #ffa;
+}
+.clickable{
+  cursor: pointer;
+  user-select: none; /* CSS3 */
+}
+.clickable:hover{
+  color:blue;
+  font-weight:bold;
+  opacity: .5;
 }

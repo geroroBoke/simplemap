@@ -28,22 +28,25 @@
 	<script src="../dataHandle/dataHandle.js"></script>
 </head>
 <body>
-	<div id="side">
-		<div id="menuDiv">
-			<button id="toggleDataBtn" >データ取込</button>
-			<button id="toggleSearchBtn" >場所を検索</button>
-		</div>
-		<div id="tantouContainer">
-		</div>
-	</div>
+	<!-- main -->
 	<div id="main">
 		<div id="middle">
 			<div id="map"></div>
 		</div>
 	</div>
+	<!-- sideDiv -->
+	<div id="sideDiv">
+		<div id="menuDiv">
+			<p><button id="toggleDataBtn" >データ取込</button></p>
+			<p><button id="toggleSearchBtn" >場所を検索</button></p>
+			<p><button id="toggleTantouBtn" >表示担当一覧</button></p>
+		</div>
+		<div id="tantouDiv">
+		</div>
+	</div>
 	<!-- サーチボックス -->
 	<div id="searchDiv">
-		<input type="textbox" id = "searchText" value="" size="40"><button id="searchButton">検索する</button>
+		<input type="textbox" id = "searchText" value="" size="40"><button id="searchButton">場所を追加</button>
 	</div>
 	<!-- データ取込フォーム -->
 	<div id="dataDiv">
@@ -57,16 +60,18 @@
 	<!-- 住所切替スライド -->
 	<div id="slideDiv">
 		<div id="slideFirstLine">
-			<span id="slideShowList" class="clickable">一覧</span>
-			<span id="slideFitsAll" class="clickable">全体</span>
-			<span id="slideNowTantou"> 現在表示中の担当者</span>
+			<span id="slideBackward" class="clickable">back</span>
+			<span id="slideNowTantou" class="clickable" title="クリックでコース全体を表示"> 現在表示中の担当者</span>
 		</div>
 		<div id="slideSecondLine">
-			<span id="slideBackward" class="clickable">back</span>
 			<span id="slideForward" class="clickable">next</span>
-			<span id="slideNowAddress" class="clickable"> 現在表示中の住所名 </span>
+			<span id="slideNowAddress" class="clickable" title="クリックでマップの中心に表示"> 現在表示中の住所名 </span>
 		</div>
 	</div>
+<!-- 担当フォーカス切替　セレクトボックス -->
+<div id="switchDiv">
+	<select id="switchSelect"></select>
+</div>
 
 <script>
 // -----------------------------------------------------------
@@ -111,38 +116,44 @@
 			}
 			return str.substr(0, i);
 		}
-
+		function selectorEscape(val){
+		    return val.replace(/[ !"#$%&'()*+,.\/:;<=>?@\[\\\]^`{|}~]/g, '\\$&');
+		}
 		// --------------------------------------------------------------------
 		//  TantouSpan
 		// --------------------------------------------------------------------
 		// 担当者ボックスを初期化する
-		function setTantouContainer(){
+		function settantouDiv(){
 
 			// エレメントの取得
-			var $tantouContainer = $('#tantouContainer');
+			var $tantouDiv = $('#tantouDiv');
 
 			// 中の要素を削除する
-			$tantouContainer.empty();
+			$tantouDiv.empty();
 
 			// 各担当者のボタンを作成する
 			kData.getList('担当者', true).forEach(function(element){
 				var $tantouSpan = createTantouSpan(element);
 				$tantouSpan.click(event_TantouSpanClick);
-				$tantouContainer.append($tantouSpan);
+				$tantouDiv.append($tantouSpan);
 			});
 
 			// すべて表示ボタンを作成する
 			var $selallSpan = createTantouSpan('すべて表示');
 			$selallSpan.click(event_SelallSpanClick);
-			$tantouContainer.append($selallSpan);
-			
+			$tantouDiv.append($selallSpan);
+
 			// TantouSpanに変更があったとき
 			refleshTantouSpan();
 		}
 
+		function toggleTantouDiv(){
+			$('#tantouDiv').toggle();
+		}
+
 		// 担当者の名前一覧のspanをつくる
 		function createTantouSpan(tantouName){
-			var $span = $('<span>').attr({id: tantouName, class: 'tantou'});
+			var $span = $('<span>').attr({id: tantouName, class: 'tantou marked'});
 			$span.append($('<span>').css('background-color', getTantouCssColorText(tantouName)).text('__'));
 			$span.append(tantouName);
 			return $span;
@@ -206,7 +217,7 @@
 			// スパンがフォーカスされていたら
 			$('.tantou').each(function(){
 				if ($(this).hasClass('focused') ){
-					// marked
+					// markedクラスを追加する
 					$(this).addClass('marked');
 					//該当担当者の住所リストを優先キューに入れる
 					GeoHandle.addAddress(kData.getList('住所', true, '担当者', $(this).attr('id')), true);
@@ -376,7 +387,9 @@
 			if (!kData) return;
 
 			// 担当者ボックスの初期化
-			setTantouContainer();
+			settantouDiv();
+
+			setswitchDiv();
 
 			// 全マーカの削除
 			for (var i = 0; i < markerArr.length ; i++){
@@ -391,6 +404,8 @@
 			GeoHandle.onLocate = myCallBack; //マーカーの再描画
 			GeoHandle.addAddress(kData.getList('住所', true));
 			GeoHandle.doNextSearch();
+
+			refleshMarker();
 		}
 
 		// アイテムが取得される度に呼ばれる(geocoderResult)
@@ -407,7 +422,6 @@
 				toggleDataDiv();
 				importData($('#dataText').val(), $('#dataChkTrim').prop('checked'), $('#dataChkMansion').prop('checked'));
 			});
-			$('#toggleDataBtn').click(toggleDataDiv);
 			$('#dataClose').click(toggleDataDiv)
 		}
 		// dataDivの表示・非表示を切り返す
@@ -435,7 +449,6 @@
 		// サーチボックス 検索場所に新しくマーカーを立てる
 		function setSearchDivEvents(){
 			$('#searchButton').click(addMarkerSearchDiv);
-			$('#toggleSearchBtn').click(toggleSearchDiv);
 			$('#searchText').keypress(setFocusSearchBtn);
 		}
 
@@ -450,6 +463,7 @@
 			$('#searchDiv').toggle();
 		}
 
+		// 検索した住所をマーカーにする
 		function addMarkerSearchDiv(){
 			var addData = {};
 			addData['担当者'] = '他';
@@ -485,8 +499,8 @@
 		function setSlideDivEvents(){
 			$('#slideForward').click(function(){manageSlide(1);});
 			$('#slideBackward').click(function(){manageSlide(-1);});
-			$('#slideFitsAll').click(function(){fitMapBoundsFocusedMarkers();});
-			$('#slideNowAddress').click(function(){manageSlide(0);})
+			$('#slideNowTantou').click(function(){fitMapBoundsFocusedMarkers();});
+			$('#slideNowAddress').click(function(){manageSlide(0); map.setZoom(16);})
 		}
 
 		// スライドの表示IDを管理・反映
@@ -495,7 +509,6 @@
 			if (isReset || typeof manageSlide.id === 'undefined'){
 				manageSlide.id = 0;
 			}
-
 			// focusedになっている担当スパンの担当者名を取得
 			var focused = $('.tantou.focused').attr('id');
 
@@ -508,7 +521,7 @@
 			manageSlide.id = Math.min(manageSlide.id,  newData.length - 1);
 
 			// 表示中の行を取得
-			var　curRow = newData[manageSlide.id];
+			var curRow = newData[manageSlide.id];
 			// var curRow['住所'] = newData[manageSlide.id]['住所'];
 
 			// slideNowAddressに表示させる
@@ -521,39 +534,14 @@
 					$('<span>')
 						.css('background-color', getTantouCssColorText(focused))
 						.text('__'));
-				$('#slideNowTantou').append(focused + '（' +  manageSlide.id+ '）');
+				$('#slideNowTantou').append(focused + '（' + (manageSlide.id + 1) + '）');
 			}
 
 			// 座標の変更
 			var result = GeoHandle.cacheResult[curRow['住所']];
 			if ( !result || result.address == GeoHandle.TEXT_FAILED) return;
 			map.setCenter(result.latlng);
-
-			//var addressArr = kData.getList('住所', true, '担当者', focused, '訪問順', true);
-			// // 状態変数増減させる
-			// manageSlide.id += increment;
-			// manageSlide.id = Math.max(manageSlide.id, 0);
-			// manageSlide.id = Math.min(manageSlide.id,  addressArr.length - 1);
-			//
-			// // 住所の取得
-			// var address = addressArr[manageSlide.id];
-			//
-			// // slideNowAddressに表示させる
-			// if (focused){$('#slideNowAddress').text( address);}
-			//
-			// // slideNowTantouに情報を表示
-			// if (focused){
-			// 	$('#slideNowTantou').empty();
-			// 	$('#slideNowTantou').append($('<span>').css('background-color', getTantouCssColorText(focused[0])).text('__'));
-			// 	$('#slideNowTantou').append(focused[0] + '（' +  (manageSlide.id + 1) + '）');
-			// }
-			//
-			// // 座標の変更
-			// var result = GeoHandle.cacheResult[address];
-			// if ( !result || result.address == GeoHandle.TEXT_FAILED) return;
-			// map.setCenter(result.latlng);
 		}
-
 		//focused中のマーカーを表示するようにマップの表示領域を変更する
 		function fitMapBoundsFocusedMarkers(){
 			// マーカーが一つでもある場合trueになる
@@ -586,8 +574,9 @@
 				zoom:mapzoom,
 				mapTypeControl:false,
 				streetViewControlOptions:{
-					position: google.maps.ControlPosition.RIGHT_CENTER,
+					position: google.maps.ControlPosition.RIGHT_TOP,
 				},
+				zoomControl:false,
 				zoomControlOptions:{
 					position: google.maps.ControlPosition.RIGHT_CENTER,
 					style:google.maps.ZoomControlStyle.LARGE
@@ -598,10 +587,44 @@
 	  		},
 			};
 		}
+		// --------------------------------------------------------------------
+		//  setswitchDiv
+		// --------------------------------------------------------------------
+		function setswitchDiv(){
+			var $switchSelect = $('#switchSelect');
+			//
+			$switchSelect.empty();
+			//
+			kData.getList('担当者', true).forEach(function(tantou){
+				$('<option>')
+					.text(tantou)
+					.appendTo($switchSelect);
+			});
+
+			$switchSelect.change(function(){
+					var tantou = $(this).find('option:selected').text();
+					tantou = selectorEscape(tantou);
+
+					$('#' + tantou).siblings().removeClass('focused');
+
+					$('#' + tantou).toggleClass('focused');
+
+					refleshTantouSpan();
+
+					setTimeout(fitMapBoundsFocusedMarkers,300);
+
+			})
+			$switchSelect.trigger('change');
+		}
 
 		// --------------------------------------------------------------------
 		//  main
 		// --------------------------------------------------------------------
+		// トグルスイッチ
+		$('#toggleDataBtn').click(toggleDataDiv);
+		$('#toggleSearchBtn').click(toggleSearchDiv);
+		$('#toggleTantouBtn').click(toggleTantouDiv);
+
 		// 取り込みボタンのイベントを設定する
 		setDataDivEvents();
 
