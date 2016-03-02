@@ -133,7 +133,7 @@
 		// --------------------------------------------------------------------
 		// 担当者の名前から色を選出する
 		function getTantouCssColorText(tantouName){
-			var tantouArr =kData.getList('担当者', true);
+			var tantouArr =myData.getList('担当者', true);
 			var index = tantouArr.indexOf(tantouName);
 			var length = tantouArr.length;
 			return 'hsla(' +(300/length*index)  + ' , ' + (35+((index%2)*25))+ '%, 50%, 1)'
@@ -153,7 +153,7 @@
 		// focused担当者のデータ一覧を取得
 		function getFocusedTantouData(){
 			var tantou = $('.tantou.focused').attr('id');
-			var newData = kData.data.filter(function(row){
+			var newData = myData.data.filter(function(row){
 				return row['担当者']==tantou}
 			);
 			return newData;
@@ -165,14 +165,14 @@
 
 			//	データの担当者一つ一つに対して
 			var flgFirst = false;
-			kData.data.forEach(function(dataRow, id){
+			myData.data.forEach(function(dataRow, id){
 				if (isTantouClassed(dataRow['担当者'], 'focused')){
-					if (markerArr[id]){
+					if (myMarkerArr[id]){
 						// 一つ目の場合、myBoundを初期化
 						if (!flgFirst) myBounds = null;
 						flgFirst = true;
 						//表示領域を広げる
-						mapExpandBounds(markerArr[id]);
+						mapExpandBounds(myMarkerArr[id]);
 					}
 				}
 			});
@@ -183,7 +183,7 @@
 			if (!myBounds) myBounds = new google.maps.LatLngBounds();
 			if (!myBounds.contains(marker.getPosition())){
 				myBounds.extend(marker.getPosition());
-				map.fitBounds(myBounds);
+				myMap.fitBounds(myBounds);
 			}
 		}
 
@@ -213,7 +213,7 @@
 			$tantouDiv.empty();
 
 			// 各担当者のボタンを作成する
-			kData.getList('担当者', true).forEach(function(element){
+			myData.getList('担当者', true).forEach(function(element){
 				var $tantouSpan = createTantouSpan(element);
 				$tantouSpan.click(event_TantouSpanClick);
 				$tantouSpan.appendTo($tantouDiv);
@@ -284,7 +284,7 @@
 			if ($('.tantou.focused')[0]){
 
 				// 優先的に住所を調べる
-				GeoHandle.addAddress(kData.getList('住所', true, '担当者', $('.tantou.focused').attr('id')), true);
+				GeoHandle.addAddress(myData.getList('住所', true, '担当者', $('.tantou.focused').attr('id')), true);
 
 				// スライドの表示IDを管理・反映
 				manageSlide(0, 0);
@@ -327,7 +327,7 @@
 				// richMarkerを作成
 			var marker = new RichMarker({
 				position: latlng,
-				map: map,
+				map: myMap,
 				flat: true,		//true推奨
 				content: $contentDiv[0].outerHTML,
 			});
@@ -335,7 +335,7 @@
 			// クリック時にInfoWindowを作成
 			marker.addListener('click', function(e){
 				var info = createInfoWindow(dataRow);
-				info.open(map, marker);
+				info.open(myMap, marker);
 			});
 
 			// 作成したマーカーを返す
@@ -367,7 +367,7 @@
 		function refleshMarker(){
 
 			//	データの担当者一つ一つに対して
-			kData.data.forEach(function(dataRow, id){
+			myData.data.forEach(function(dataRow, id){
 
 				// 担当者のスパンがmarked, focusedフラグの取得
 				var isMarked = isTantouClassed(dataRow['担当者'], 'marked') ;
@@ -376,17 +376,17 @@
 				// 要マーカー作成
 				if ( isMarked || isFocused){
 					// マーカー作成ああ
-					if (!markerArr[id]){
+					if (!myMarkerArr[id]){
 						//ジオコーダ取得。
 						var result = GeoHandle.cacheResult[dataRow['住所']];
 						if (!result || result.address == GeoHandle.TEXT_FAILED) return;			//検索履歴なしもしくは取得失敗なら終了
 						// マーカー作成
-						markerArr[id] = createMarker(id, result, dataRow, isFocused);
+						myMarkerArr[id] = createMarker(id, result, dataRow, isFocused);
 					}
 				}else{
 					// マーカーの削除
-					if(markerArr[id]) markerArr[id].setMap(null);
-					markerArr[id] = null;
+					if(myMarkerArr[id]) myMarkerArr[id].setMap(null);
+					myMarkerArr[id] = null;
 				}
 
 				// フォーカス時 マーカーのコメント部分にfocusedクラスを付加する
@@ -409,6 +409,24 @@
 			// テキストが空なら終了
 			if (!dataText) return;
 
+			// #で始まる行は制御文 処理した上で取り除く
+			var lines = dataText.split('\n');
+			dataText ='';
+			for (var i=0;  i < lines.length; i++ ){
+				if (lines[i].substr(0,1) == '#'){
+					var param = lines[i].substr(1).split(':');
+					switch (param[0]){
+						case 'title': myTitle = param[1]; break;
+						case 'groupby': myGroupBy = param[1]; break;
+						case 'sortby': mySortBy = param[1]; break;
+						case 'plotby': myPlotBy = param[1]; break;
+					}
+				}else {
+					// その他のデータはdataTextに入れ直す
+					dataText += lines[i] + '\n';
+				}
+			}
+
 			// テキストをパースする
 			var data = dataHandle.csvParse(dataText, '\t', true);
 
@@ -425,7 +443,7 @@
 				if (row['訪問順']==='訪問順') return false;
 				return true;
 			});
-			
+
 			// 重複したレコードがあれば削除する
 			if (isUniqueRecord){data.data = getUniqueRecordArray(data.data)};
 
@@ -434,7 +452,7 @@
 			if (isTrimMansion){data.data.forEach(function(row){row['住所'] = trimMansionOrlater(trimGarbage(row['住所']));});}
 
 			// dataをプロット用のデータとして採用する
-			kData = data;
+			myData = data;
 
 			// 新しいデータでマップの初期化をしなおす
 			initializeMap();
@@ -446,7 +464,7 @@
 		// 担当者ボックスを初期化する、マーカーを初期化する
 		function initializeMap(){
 			// データがなければ終了
-			if (!kData) return;
+			if (!myData) return;
 
 			// 担当者ボックスの初期化
 			settantouDiv();
@@ -454,17 +472,17 @@
 			setswitchDiv();
 
 			// 全マーカの削除
-			for (var i = 0; i < markerArr.length ; i++){
-				if (markerArr[i]) markerArr[i].setMap(null);
+			for (var i = 0; i < myMarkerArr.length ; i++){
+				if (myMarkerArr[i]) myMarkerArr[i].setMap(null);
 			}
-			markerArr = [];
+			myMarkerArr = [];
 
 			// 地図の表示範囲初期化
 			myBounds = null;
 
 			// GeoHandleオブジェクトの操作
 			GeoHandle.onLocate = myCallBack; //マーカーの再描画
-			GeoHandle.addAddress(kData.getList('住所', true));
+			GeoHandle.addAddress(myData.getList('住所', true));
 			GeoHandle.doNextSearch();
 
 			refleshMarker();
@@ -504,7 +522,7 @@
 			if($dataDiv.is(':visible')){
 				setTimeout(function(){
 					// 現在のデータをCSVにして再表示
-					if (kData) $dataText.val(dataHandle.csvOutput(kData.data, '\t'));
+					if (myData) $dataText.val(dataHandle.csvOutput(myData.data, '\t'));
 					$dataText.focus();
 					$dataText.append('');
 				}, 1);
@@ -536,10 +554,10 @@
 			addData['担当者'] = '他';
 			addData['訪問順'] = '';
 			addData['住所'] = $('#searchText').val();
-			if (!kData){
-				kData = new dataHandle.ObjectArray([ addData]);
+			if (!myData){
+				myData = new dataHandle.ObjectArray([ addData]);
 			}else{
-				kData.data.push(addData);
+				myData.data.push(addData);
 			}
 
 			// 現在の担当スパン状態を取得する
@@ -567,7 +585,7 @@
 			$('#slideForward').click(function(){manageSlide(1);});
 			$('#slideBackward').click(function(){manageSlide(-1);});
 			$('#slideNowTantou').click(function(){fitMapBoundsFocusedMarkers();});
-			$('#slideNowAddress').click(function(){manageSlide(0); map.setZoom(16);})
+			$('#slideNowAddress').click(function(){manageSlide(0); myMap.setZoom(16);})
 		}
 
 		// スライドの表示IDを管理・反映
@@ -590,7 +608,7 @@
 
 			// データをスライド情報に反映させる
 			applySlideData(newData[manageSlide.id]);
-			
+
 		}
 
 		// データをスライド情報に反映させる
@@ -610,7 +628,7 @@
 			// マップ座標の変更
 			var result = GeoHandle.cacheResult[curRow['住所']];
 			if ( !result || result.address == GeoHandle.TEXT_FAILED) return;
-			map.setCenter(result.latlng);
+			myMap.setCenter(result.latlng);
 		}
 
 		// --------------------------------------------------------------------
@@ -625,7 +643,7 @@
 			$switchSelect.empty();
 
 			// 担当者一覧でオプションを作成する
-			kData.getList('担当者', true).forEach(function(tantou){
+			myData.getList('担当者', true).forEach(function(tantou){
 				$('<option>')
 					.text(tantou)
 					.appendTo($switchSelect);
@@ -689,26 +707,33 @@
 		// 切替スライドのイベントを設定する
 		setSlideDivEvents();
 
-		// kData ObjectArrayオブジェクト dataImportないで初期化される
-		var kData;
+		// myData ObjectArrayオブジェクト用の変数を宣言する importData内で初期化されます
+		var myData;
+
+		// オプション用の変数を用意 デフォルトを設定 importData内で再設定できます
+		var myTitle = 'かんたん地図プロット';
+		var myGroupBy = '担当者';
+		var mySortBy = '訪問順';
+		var myPlotBy = '住所';
 
 		// マーカー配列を用意
-		var markerArr = [];
+		var myMarkerArr = [];
 
 		// マップの表示領域を格納する
 		var myBounds = new google.maps.LatLngBounds();
 
 		// googleマップの読込み
-		var map = new google.maps.Map($('#map')[0], getMyMapOption());
+		var myMap = new google.maps.Map($('#map')[0], getMyMapOption());
 
-		// geocoderキャッシュ管理オブジェクトを初期化
-		GeoHandle.init();
-
-		// 呼出パラメータでマップを生成する
+		// URIに#以降があればそのパラメータでdataImportを行う
 		if (location.hash.length >= 0){
 			importData(decodeURI(location.hash.substring(1)),
 			true, true ,true);// default true true
 		}
+
+		// geocoderキャッシュ管理オブジェクトを初期化
+		GeoHandle.init();
+
 	})();
 
 </script>
