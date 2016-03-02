@@ -133,7 +133,7 @@
 		// --------------------------------------------------------------------
 		// 担当者の名前から色を選出する
 		function getTantouCssColorText(tantouName){
-			var tantouArr =myData.getList('担当者', true);
+			var tantouArr =myData.getList(myGroupBy, true);
 			var index = tantouArr.indexOf(tantouName);
 			var length = tantouArr.length;
 			return 'hsla(' +(300/length*index)  + ' , ' + (35+((index%2)*25))+ '%, 50%, 1)'
@@ -154,7 +154,7 @@
 		function getFocusedTantouData(){
 			var tantou = $('.tantou.focused').attr('id');
 			var newData = myData.data.filter(function(row){
-				return row['担当者']==tantou}
+				return row[myGroupBy]==tantou}
 			);
 			return newData;
 		}
@@ -166,7 +166,7 @@
 			//	データの担当者一つ一つに対して
 			var flgFirst = false;
 			myData.data.forEach(function(dataRow, id){
-				if (isTantouClassed(dataRow['担当者'], 'focused')){
+				if (isTantouClassed(dataRow[myGroupBy], 'focused')){
 					if (myMarkerArr[id]){
 						// 一つ目の場合、myBoundを初期化
 						if (!flgFirst) myBounds = null;
@@ -213,7 +213,7 @@
 			$tantouDiv.empty();
 
 			// 各担当者のボタンを作成する
-			myData.getList('担当者', true).forEach(function(element){
+			myData.getList(myGroupBy, true).forEach(function(element){
 				var $tantouSpan = createTantouSpan(element);
 				$tantouSpan.click(event_TantouSpanClick);
 				$tantouSpan.appendTo($tantouDiv);
@@ -284,7 +284,7 @@
 			if ($('.tantou.focused')[0]){
 
 				// 優先的に住所を調べる
-				GeoHandle.addAddress(myData.getList('住所', true, '担当者', $('.tantou.focused').attr('id')), true);
+				GeoHandle.addAddress(myData.getList(myPlotBy, true, myGroupBy, $('.tantou.focused').attr('id')), true);
 
 				// スライドの表示IDを管理・反映
 				manageSlide(0, 0);
@@ -305,8 +305,8 @@
 
 			// richMarkerのプロパティ
 			var latlng = result.latlng;
-			var labelText = dataRow['担当者'].match(/[^\d:;#]/) + dataRow['訪問順']; // 吹き出しの中身 	// 数字や記号以外で最初の一文字を取得する
-			var colorText = getTantouCssColorText(dataRow['担当者']);// 吹き出しの色を取得
+			var labelText = dataRow[myGroupBy].match(/[^\d:;#]/) + dataRow[mySortBy]; // 吹き出しの中身 	// 数字や記号以外で最初の一文字を取得する
+			var colorText = getTantouCssColorText(dataRow[myGroupBy]);// 吹き出しの色を取得
 			var commentText = result.address; // 横のコメントの内容
 
 			// richmarkerのcontentの作成
@@ -370,15 +370,15 @@
 			myData.data.forEach(function(dataRow, id){
 
 				// 担当者のスパンがmarked, focusedフラグの取得
-				var isMarked = isTantouClassed(dataRow['担当者'], 'marked') ;
-				var isFocused = isTantouClassed(dataRow['担当者'], 'focused');
+				var isMarked = isTantouClassed(dataRow[myGroupBy], 'marked') ;
+				var isFocused = isTantouClassed(dataRow[myGroupBy], 'focused');
 
 				// 要マーカー作成
 				if ( isMarked || isFocused){
 					// マーカー作成ああ
 					if (!myMarkerArr[id]){
 						//ジオコーダ取得。
-						var result = GeoHandle.cacheResult[dataRow['住所']];
+						var result = GeoHandle.cacheResult[dataRow[myPlotBy]];
 						if (!result || result.address == GeoHandle.TEXT_FAILED) return;			//検索履歴なしもしくは取得失敗なら終了
 						// マーカー作成
 						myMarkerArr[id] = createMarker(id, result, dataRow, isFocused);
@@ -397,9 +397,51 @@
 				}
 		});
 		}
+		// --------------------------------------------------------------------
+		//  parseOption
+		// --------------------------------------------------------------------
+
+		function retriveParseOption(srcText, getField){
+			var result = '';
+			// 行ごとに分解
+			srcText.split('\n').forEach(function(line){
+				// #で始まる行は制御文
+				if (line.substr(0,1) == '#'){
+					var param = line.substr(1).split(':');
+					// :以前が該当フィールドなら:以後をリターン
+					if (param[0] == getField ) result =  param[1];
+				}
+			});
+			if (!result) result = getDefaultParseOption(getField);
+			return result;
+		}
+
+		function getDefaultParseOption(getField){
+			if (getField == 'title') return 'かんたん地図プロット';
+			if (getField == 'groupby') return '担当者';
+			if (getField == 'sortby') return '訪問順';
+			if (getField == 'plotby') return '住所';
+		}
+
+		function outputParseOptionText(){
+			var tempText = '';
+			tempText += '#title:' + myTitle + '\n';
+			tempText += '#groupby:' + myGroupBy + '\n';
+			tempText += '#sortby:' + mySortBy + '\n';
+			tempText += '#plotby:' + myPlotBy + '\n';
+			return tempText;
+		}
 
 
-
+		// ソースからパース設定に関する行を取り除く
+		function trimParseOptions(srcText){
+			var newText ='';
+			srcText.split('\n').forEach(function(line){
+					// #で始まる行は制御文 取り除く
+					if (line.substr(0,1) != '#') newText += line + '\n';
+			});
+			return newText;
+		}
 		// --------------------------------------------------------------------
 		//  importData
 		// --------------------------------------------------------------------
@@ -409,38 +451,27 @@
 			// テキストが空なら終了
 			if (!dataText) return;
 
-			// #で始まる行は制御文 処理した上で取り除く
-			var lines = dataText.split('\n');
-			dataText ='';
-			for (var i=0;  i < lines.length; i++ ){
-				if (lines[i].substr(0,1) == '#'){
-					var param = lines[i].substr(1).split(':');
-					switch (param[0]){
-						case 'title': myTitle = param[1]; break;
-						case 'groupby': myGroupBy = param[1]; break;
-						case 'sortby': mySortBy = param[1]; break;
-						case 'plotby': myPlotBy = param[1]; break;
-					}
-				}else {
-					// その他のデータはdataTextに入れ直す
-					dataText += lines[i] + '\n';
-				}
-			}
+			// #制御文からパース設定を取得する 		  // #制御文を取り除く
+			myTitle = retriveParseOption(dataText, 'title');
+			myGroupBy = retriveParseOption(dataText, 'groupby');
+			mySortBy = retriveParseOption(dataText, 'sortby');
+			myPlotBy = retriveParseOption(dataText, 'plotby');
+			dataText = trimParseOptions(dataText);
 
 			// テキストをパースする
 			var data = dataHandle.csvParse(dataText, '\t', true);
 
 			// 正しいフィールドを持っているか確認
 			if (!data) return;
-			if (!data.getList('住所')) return;
-			if (!data.getList('担当者')) return;
-			if (!data.getList('訪問順')) return;
+			if (!data.getList(myPlotBy)) return;
+			if (!data.getList(myGroupBy)) return;
+			if (!data.getList(mySortBy)) return;
 
 			// フィールド名と等しい値がある行は削除する
 			data.data = data.data.filter(function(row){
-				if (row['住所'] ==='住所') return false;
-				if (row['担当者']==='担当者') return false;
-				if (row['訪問順']==='訪問順') return false;
+				if (row[myPlotBy] ===myPlotBy) return false;
+				if (row[myGroupBy]===myGroupBy) return false;
+				if (row[mySortBy]===mySortBy) return false;
 				return true;
 			});
 
@@ -448,8 +479,8 @@
 			if (isUniqueRecord){data.data = getUniqueRecordArray(data.data)};
 
 			// Trimフラグがあれば行う
-			if (isTrimGarbage){data.data.forEach(function(row){row['住所'] = trimGarbage(row['住所']);});}
-			if (isTrimMansion){data.data.forEach(function(row){row['住所'] = trimMansionOrlater(trimGarbage(row['住所']));});}
+			if (isTrimGarbage){data.data.forEach(function(row){row[myPlotBy] = trimGarbage(row[myPlotBy]);});}
+			if (isTrimMansion){data.data.forEach(function(row){row[myPlotBy] = trimMansionOrlater(trimGarbage(row[myPlotBy]));});}
 
 			// dataをプロット用のデータとして採用する
 			myData = data;
@@ -482,7 +513,7 @@
 
 			// GeoHandleオブジェクトの操作
 			GeoHandle.onLocate = myCallBack; //マーカーの再描画
-			GeoHandle.addAddress(myData.getList('住所', true));
+			GeoHandle.addAddress(myData.getList(myPlotBy, true));
 			GeoHandle.doNextSearch();
 
 			refleshMarker();
@@ -522,9 +553,12 @@
 			if($dataDiv.is(':visible')){
 				setTimeout(function(){
 					// 現在のデータをCSVにして再表示
-					if (myData) $dataText.val(dataHandle.csvOutput(myData.data, '\t'));
+					if (myData)
+						$dataText.val( outputParseOptionText()
+							+ dataHandle.csvOutput(myData.data, '\t')
+						);
 					$dataText.focus();
-					$dataText.append('');
+					// $dataText.append('');
 				}, 1);
 			}
 		}
@@ -551,9 +585,9 @@
 		// 検索した住所をマーカーにする
 		function addMarkerSearchDiv(){
 			var addData = {};
-			addData['担当者'] = '他';
-			addData['訪問順'] = '';
-			addData['住所'] = $('#searchText').val();
+			addData[myGroupBy] = '他';
+			addData[mySortBy] = '';
+			addData[myPlotBy] = $('#searchText').val();
 			if (!myData){
 				myData = new dataHandle.ObjectArray([ addData]);
 			}else{
@@ -614,19 +648,19 @@
 		// データをスライド情報に反映させる
 		function applySlideData(curRow){
 			// slideNowAddressに表示させる
-			$('#slideNowAddress').text( curRow['住所']);
+			$('#slideNowAddress').text( curRow[myPlotBy]);
 
 			// slideNowTantouに情報を表示
 			$('#slideNowTantou').empty();
 			$('#slideNowTantou').append( //
 				$('<span>')
-					.css('background-color', getTantouCssColorText(curRow['担当者']))
+					.css('background-color', getTantouCssColorText(curRow[myGroupBy]))
 					.text('__'));
 			$('#slideNowTantou').append(
-				curRow['担当者'] + '（' + curRow['訪問順'] + '）');
+				curRow[myGroupBy] + '（' + curRow[mySortBy] + '）');
 
 			// マップ座標の変更
-			var result = GeoHandle.cacheResult[curRow['住所']];
+			var result = GeoHandle.cacheResult[curRow[myPlotBy]];
 			if ( !result || result.address == GeoHandle.TEXT_FAILED) return;
 			myMap.setCenter(result.latlng);
 		}
@@ -643,7 +677,7 @@
 			$switchSelect.empty();
 
 			// 担当者一覧でオプションを作成する
-			myData.getList('担当者', true).forEach(function(tantou){
+			myData.getList(myGroupBy, true).forEach(function(tantou){
 				$('<option>')
 					.text(tantou)
 					.appendTo($switchSelect);
@@ -711,10 +745,10 @@
 		var myData;
 
 		// オプション用の変数を用意 デフォルトを設定 importData内で再設定できます
-		var myTitle = 'かんたん地図プロット';
-		var myGroupBy = '担当者';
-		var mySortBy = '訪問順';
-		var myPlotBy = '住所';
+		var myTitle = getDefaultParseOption('title');
+		var myGroupBy = getDefaultParseOption('groupby');
+		var mySortBy = getDefaultParseOption('sortby');
+		var myPlotBy = getDefaultParseOption('plotby');
 
 		// マーカー配列を用意
 		var myMarkerArr = [];
