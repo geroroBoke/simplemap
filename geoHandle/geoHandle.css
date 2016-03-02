@@ -39,6 +39,7 @@ body, html{
   text-align: center;
   top: 10px;
   left: 140px;
+  width: calc(100% - 200px);
   padding: 10px 10px;
   border-radius:10px;
   background: Honeydew;
@@ -52,8 +53,12 @@ body, html{
   font-size: 1.8rem;
   line-height: 1.8rem;
 }
+#dataText{
+  width: calc(100% - 3em);
+  height: 15em;
+}
 
-/*    */
+/*  searchDiv  */
 #searchDiv{
   position: fixed;
   text-align: center;
@@ -71,28 +76,30 @@ body, html{
   position: absolute;
   left: 0;
   right: 0;
-  margin: 0 auto;
-  padding: 0;
+  /*bottom: 1rem;*/
+  /*top: 1rem;*/
   bottom: 1rem;
   width: 100%;
   max-width: 400px;
+  margin: 0 auto;
+  padding: 0;
   text-align: center;
-  background: #ffd;
+  background: #ffc;
   overflow: hidden;
-  opacity: .8;
+  opacity: .7;
   display: none;
 }
 #slideFirstLine{
 	margin: 0;
 	padding: 0;
-	height: 2.5rem;
-	line-height:2.5rem;
+	height: 2.2rem;
+	line-height:2.2rem;
 }
 #slideSecondLine{
 	margin: 0;
 	padding: 0;
-	height: 2.5rem;
-	line-height:2.5rem;
+	height: 2.2rem;
+	line-height:2.2rem;
 }
 #slideNowTantou{
   display: inline-block;
@@ -122,14 +129,8 @@ body, html{
   right: 4rem;
 }
 #switchDiv select{
-  font-size: 1.5rem;
+  font-size: 1.2rem;
   min-width: 10rem;
-}
-
-
-@keyframes anime1{
-  0%{background-color: aqua;}
-  100%{background-color: white;}
 }
 
 .marker{
@@ -171,6 +172,9 @@ body, html{
 .markerComment{
   /* display: inline-block; */
   display: none;
+  -moz-user-select: none; /* Firefox */
+  -webkit-user-select: none; /* SafariÅAChromeÇ»Ç« */
+  -ms-user-select: none; /* IE10Ç©ÇÁÇÁÇµÇ¢ */
 }
 .markerComment.markerFocused{
   display: inline-block;

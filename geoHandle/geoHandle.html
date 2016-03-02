@@ -48,45 +48,41 @@
 	<div id="searchDiv">
 		<input type="textbox" id = "searchText" value="" size="40"><button id="searchButton">場所を追加</button>
 	</div>
-	<!-- データ取込フォーム -->
-	<div id="dataDiv">
-		<div id="dataClose" class="clickable">×</div>
-		<span id="dataTitle">住所データを「タブ区切りのレコード」で入力</span>
-		<p><textarea id="dataText" cols="90" rows="14"></textarea></p>
-		<button id="dataBtnImport" >プロット開始</button>
-		<input type="checkbox" id="dataChkTrim" checked="true"><label for="dataChkTrim">ゴミ文字を削除</label>
-		<input type="checkbox" id="dataChkMansion" checked="true"><label for="dataChkMansion">マンション名を削除</label>
-	</div>
 	<!-- 住所切替スライド -->
 	<div id="slideDiv">
 		<div id="slideFirstLine">
 			<span id="slideBackward" class="clickable">back</span>
-			<span id="slideNowTantou" class="clickable" title="クリックでコース全体を表示"> 現在表示中の担当者</span>
+			<span id="slideNowTantou" class="clickable" title="コース全体を表示"> 現在表示中の担当者</span>
 		</div>
 		<div id="slideSecondLine">
 			<span id="slideForward" class="clickable">next</span>
-			<span id="slideNowAddress" class="clickable" title="クリックでマップの中心に表示"> 現在表示中の住所名 </span>
+			<span id="slideNowAddress" class="clickable" title="マップの中心に表示"> 現在表示中の住所名 </span>
 		</div>
 	</div>
-<!-- 担当フォーカス切替　セレクトボックス -->
-<div id="switchDiv">
-	<select id="switchSelect"></select>
-</div>
-
+	<!-- 担当フォーカス切替　セレクトボックス -->
+	<div id="switchDiv">
+		<select id="switchSelect"></select>
+	</div>
+	<!-- データ取込フォーム -->
+	<div id="dataDiv">
+		<div id="dataClose" class="clickable">×</div>
+		<span id="dataTitle">住所データを「タブ区切りのレコード」で入力</span>
+		<p><textarea id="dataText"></textarea></p>
+		<button id="dataBtnImport" >プロット開始</button>
+		<input type="checkbox" id="dataChkUnique" checked="true">
+			<label for="dataChkUnique">重複行を削除</label>
+		<input type="checkbox" id="dataChkTrim" checked="true">
+			<label for="dataChkTrim">ゴミ文字を削除</label>
+		<input type="checkbox" id="dataChkMansion" checked="true">
+			<label for="dataChkMansion">マンション名を削除</label>
+	</div>
 <script>
 // -----------------------------------------------------------
 	(function(){
 		'use strict'
 		// --------------------------------------------------------------------
-		//  trivial functions
+		//  functions 他のプロジェクトでも使えそうなもの
 		// --------------------------------------------------------------------
-		// 担当者の名前から色を選出する
-		function getTantouCssColorText(tantouName){
-			var tantouArr =kData.getList('担当者', true);
-			var index = tantouArr.indexOf(tantouName);
-			var length = tantouArr.length;
-			return 'hsla(' +(300/length*index)  + ' , ' + (35+((index%2)*25))+ '%, 50%, 1)'
-		}
 		//文字列からスペースと”。”を取り除く
 		function trimGarbage(str){
 				if (typeof str != 'string') return; //throw new Error('string型を引数にいれてください');
@@ -94,8 +90,7 @@
 				str = str.replace(/。/g, "");
 				return str;
 		}
-		// 住所文字列からマンション名（と思われるもの）以降を取り除く
-		// 数字より後ろの文字はマンション名と判断する
+		// 住所文字列からマンション名（と思われるもの）以降を取り除く  数字より後ろの文字はマンション名と判断する
 		function trimMansionOrlater(str){
 			// 文字列でない場合は終了
 			if (typeof str != 'string') return;
@@ -116,9 +111,95 @@
 			}
 			return str.substr(0, i);
 		}
+
+		// セレクタで使われる記号をエスケープする
 		function selectorEscape(val){
 		    return val.replace(/[ !"#$%&'()*+,.\/:;<=>?@\[\\\]^`{|}~]/g, '\\$&');
 		}
+
+		// 配列のレコード重複をなくす　 TODO 無理やりすぎる？
+		function getUniqueRecordArray(array) {
+			var storage = {};
+			return array.filter(function(value){
+				if (!(JSON.stringify(value) in storage)) {
+					storage[JSON.stringify(value)] = true;
+					return true;
+				}
+			});
+		}
+
+		// --------------------------------------------------------------------
+		//  unique function このファイル固有の関数
+		// --------------------------------------------------------------------
+		// 担当者の名前から色を選出する
+		function getTantouCssColorText(tantouName){
+			var tantouArr =kData.getList('担当者', true);
+			var index = tantouArr.indexOf(tantouName);
+			var length = tantouArr.length;
+			return 'hsla(' +(300/length*index)  + ' , ' + (35+((index%2)*25))+ '%, 50%, 1)'
+		}
+
+		// 指定した担当スパンをフォーカス状態にする
+		function changeFocusedTantou(tantou){
+			// セレクタに使う記号をエスケープする
+			tantou = selectorEscape(tantou);
+			// 他の担当スパンのフォーカスを消す
+			$('#' + tantou).siblings().removeClass('focused');
+			$('#' + tantou).addClass('focused');
+			// スパン変更時のアクションを実行
+			refleshTantouSpan();
+		}
+
+		// focused担当者のデータ一覧を取得
+		function getFocusedTantouData(){
+			var tantou = $('.tantou.focused').attr('id');
+			var newData = kData.data.filter(function(row){
+				return row['担当者']==tantou}
+			);
+			return newData;
+		}
+
+
+		//focused中のマーカーを表示するようにマップの表示領域を変更する
+		function fitMapBoundsFocusedMarkers(){
+
+			//	データの担当者一つ一つに対して
+			var flgFirst = false;
+			kData.data.forEach(function(dataRow, id){
+				if (isTantouClassed(dataRow['担当者'], 'focused')){
+					if (markerArr[id]){
+						// 一つ目の場合、myBoundを初期化
+						if (!flgFirst) myBounds = null;
+						flgFirst = true;
+						//表示領域を広げる
+						mapExpandBounds(markerArr[id]);
+					}
+				}
+			});
+		}
+		// 指定マーカーに合わせてマップの表示領域を拡大する
+		function mapExpandBounds(marker){
+			//var curBounds = myBounds;
+			if (!myBounds) myBounds = new google.maps.LatLngBounds();
+			if (!myBounds.contains(marker.getPosition())){
+				myBounds.extend(marker.getPosition());
+				map.fitBounds(myBounds);
+			}
+		}
+
+
+		// 担当者スパンに特定のクラスが付いているか判別する
+		function isTantouClassed(tantou, className){
+			if (typeof tantou !== 'string') return false;
+			var flg = false;
+			$('.tantou').each(function(){
+				if ($(this).hasClass(className) && $(this).attr('id') == tantou ){
+					flg = true;
+				}
+			});
+			return flg;
+		}
+
 		// --------------------------------------------------------------------
 		//  TantouSpan
 		// --------------------------------------------------------------------
@@ -135,13 +216,13 @@
 			kData.getList('担当者', true).forEach(function(element){
 				var $tantouSpan = createTantouSpan(element);
 				$tantouSpan.click(event_TantouSpanClick);
-				$tantouDiv.append($tantouSpan);
+				$tantouSpan.appendTo($tantouDiv);
 			});
 
 			// すべて表示ボタンを作成する
 			var $selallSpan = createTantouSpan('すべて表示');
 			$selallSpan.click(event_SelallSpanClick);
-			$tantouDiv.append($selallSpan);
+			$selallSpan.appendTo($tantouDiv);
 
 			// TantouSpanに変更があったとき
 			refleshTantouSpan();
@@ -159,17 +240,6 @@
 			return $span;
 		}
 
-		// 担当者スパンに特定のクラスが付いているか判別する
-		function isTantouClassed(tantou, className){
-			if (typeof tantou !== 'string') return false;
-			var flg = false;
-			$('.tantou').each(function(){
-				if ($(this).hasClass(className) && $(this).attr('id') == tantou ){
-					flg = true;
-				}
-			});
-			return flg;
-		}
 
 		// --------------------------------------------------------------------
 		// event_SelallSpanClick
@@ -180,7 +250,14 @@
 			// すべて表示スパンをトグルする
 			$(this).toggleClass('marked');
 
-			// スパンをリフレッシュする（ほかのスパンのトグルもこちらで行う）
+			// すべて表示スパンと他のスパンのmarkedを同期する
+			if ($(this).hasClass('marked')){
+				$(this).siblings().addClass('marked');
+			}else{
+				$(this).siblings().removeClass('marked');
+			}
+
+			// TantouSpanに変更があったときのアクションを実行する
 			refleshTantouSpan();
 
 		}
@@ -190,42 +267,31 @@
 		// TantouSpanがクリックされた時 markedクラスを付加する
 		function event_TantouSpanClick(){
 
-			// 他のスパンのfocusedクラスを消す
-			$(this).siblings().removeClass('focused');
+			// markedクラスをトグルする
+			$(this).toggleClass('marked');
 
-			// focusedクラスをトグルする
-			$(this).toggleClass('focused');
-
-			// スパンをリフレッシュする
+			// TantouSpanに変更があったときのアクションを実行する
 			refleshTantouSpan();
-
 		};
 
-		// TantouSpanに変更があったときはここを実行する
+		// TantouSpanに変更があったときのアクションを実行する
 		function refleshTantouSpan(){
-
-			// すべて表示スパンと他のスパンのmarkedを同期する
-			if ($('#すべて表示').hasClass('marked')){
-				$('#すべて表示').siblings().addClass('marked');
-			}else{
-				$('#すべて表示').siblings().removeClass('marked');
-			}
 
 			// スライドDIVを消す
 			$('#slideDiv').hide();
 
-			// スパンがフォーカスされていたら
-			$('.tantou').each(function(){
-				if ($(this).hasClass('focused') ){
-					// markedクラスを追加する
-					$(this).addClass('marked');
-					//該当担当者の住所リストを優先キューに入れる
-					GeoHandle.addAddress(kData.getList('住所', true, '担当者', $(this).attr('id')), true);
-					// スライドDIVの設置
-					manageSlide(0, true);
-					$('#slideDiv').show();
-				}
-			});
+			// フォーカスされているスパンについて
+			if ($('.tantou.focused')[0]){
+
+				// 優先的に住所を調べる
+				GeoHandle.addAddress(kData.getList('住所', true, '担当者', $('.tantou.focused').attr('id')), true);
+
+				// スライドの表示IDを管理・反映
+				manageSlide(0, 0);
+
+				// スライドDIVを再表示
+				$('#slideDiv').show();
+			}
 
 			// スパンをリフレッシュする
 			refleshMarker();
@@ -246,6 +312,7 @@
 			// richmarkerのcontentの作成
 			var $contentDiv = $('<div>')
 				.attr('id', id)
+				.attr('title', commentText)
 				.append(
 					$('<div>')
 						.addClass('marker')
@@ -307,8 +374,8 @@
 				var isFocused = isTantouClassed(dataRow['担当者'], 'focused');
 
 				// 要マーカー作成
-				if ( isMarked ){
-					// マーカー作成
+				if ( isMarked || isFocused){
+					// マーカー作成ああ
 					if (!markerArr[id]){
 						//ジオコーダ取得。
 						var result = GeoHandle.cacheResult[dataRow['住所']];
@@ -331,21 +398,13 @@
 		});
 		}
 
-		// 指定マーカーに合わせてマップの表示領域を拡大する
-		function mymapExpandBounds(marker){
-			//var curBounds = myBounds;
-			if (!myBounds) myBounds = new google.maps.LatLngBounds();
-			if (!myBounds.contains(marker.getPosition())){
-				myBounds.extend(marker.getPosition());
-				map.fitBounds(myBounds);
-			}
-		}
+
 
 		// --------------------------------------------------------------------
 		//  importData
 		// --------------------------------------------------------------------
 		// 渡されたテキストをパースして地図プロットする
-		function importData(dataText, isTrimGarbage, isTrimMansion){
+		function importData(dataText, isUniqueRecord, isTrimGarbage, isTrimMansion){
 
 			// テキストが空なら終了
 			if (!dataText) return;
@@ -366,6 +425,9 @@
 				if (row['訪問順']==='訪問順') return false;
 				return true;
 			});
+			
+			// 重複したレコードがあれば削除する
+			if (isUniqueRecord){data.data = getUniqueRecordArray(data.data)};
 
 			// Trimフラグがあれば行う
 			if (isTrimGarbage){data.data.forEach(function(row){row['住所'] = trimGarbage(row['住所']);});}
@@ -375,14 +437,14 @@
 			kData = data;
 
 			// 新しいデータでマップの初期化をしなおす
-			init();
+			initializeMap();
 		}
 
 		// --------------------------------------------------------------------
-		//  init
+		//  initializeMap
 		// --------------------------------------------------------------------
 		// 担当者ボックスを初期化する、マーカーを初期化する
-		function init(){
+		function initializeMap(){
 			// データがなければ終了
 			if (!kData) return;
 
@@ -420,7 +482,12 @@
 		function setDataDivEvents(){
 			$('#dataBtnImport').click(function(){
 				toggleDataDiv();
-				importData($('#dataText').val(), $('#dataChkTrim').prop('checked'), $('#dataChkMansion').prop('checked'));
+				importData(
+					$('#dataText').val(),
+					$('#dataChkUnique').prop('checked'),
+					$('#dataChkTrim').prop('checked'),
+					$('#dataChkMansion').prop('checked')
+				);
 			});
 			$('#dataClose').click(toggleDataDiv)
 		}
@@ -480,7 +547,7 @@
 			var tantouFocused = $('.tantou.focused').attr('id');
 
 			// マップを初期化し直す
-			init();
+			initializeMap();
 
 			// 担当スパン状態を復元する
 			if ( isSelAllMarked ) $('#すべて表示').addClass('marked');
@@ -504,75 +571,92 @@
 		}
 
 		// スライドの表示IDを管理・反映
-		function manageSlide(increment, isReset){
+		function manageSlide(increment, setId){
 			// 状態変数の初期化
-			if (isReset || typeof manageSlide.id === 'undefined'){
+			if (typeof manageSlide.id === 'undefined'){
 				manageSlide.id = 0;
 			}
-			// focusedになっている担当スパンの担当者名を取得
-			var focused = $('.tantou.focused').attr('id');
+			if (setId ){
+				manageSlide.id = setId;
+			}
 
 			// focused担当者のデータ一覧を取得
-			var newData = kData.data.filter(function(row){return row['担当者']==focused});
+			var newData = getFocusedTantouData();
 
 			// 状態変数増減させる
 			manageSlide.id += increment
 			manageSlide.id = Math.max(manageSlide.id, 0);
 			manageSlide.id = Math.min(manageSlide.id,  newData.length - 1);
 
-			// 表示中の行を取得
-			var curRow = newData[manageSlide.id];
-			// var curRow['住所'] = newData[manageSlide.id]['住所'];
+			// データをスライド情報に反映させる
+			applySlideData(newData[manageSlide.id]);
+			
+		}
 
+		// データをスライド情報に反映させる
+		function applySlideData(curRow){
 			// slideNowAddressに表示させる
-			if (focused){$('#slideNowAddress').text( curRow['住所']);}
+			$('#slideNowAddress').text( curRow['住所']);
 
 			// slideNowTantouに情報を表示
-			if (focused){
-				$('#slideNowTantou').empty();
-				$('#slideNowTantou').append(
-					$('<span>')
-						.css('background-color', getTantouCssColorText(focused))
-						.text('__'));
-				$('#slideNowTantou').append(focused + '（' + (manageSlide.id + 1) + '）');
-			}
+			$('#slideNowTantou').empty();
+			$('#slideNowTantou').append( //
+				$('<span>')
+					.css('background-color', getTantouCssColorText(curRow['担当者']))
+					.text('__'));
+			$('#slideNowTantou').append(
+				curRow['担当者'] + '（' + curRow['訪問順'] + '）');
 
-			// 座標の変更
+			// マップ座標の変更
 			var result = GeoHandle.cacheResult[curRow['住所']];
 			if ( !result || result.address == GeoHandle.TEXT_FAILED) return;
 			map.setCenter(result.latlng);
 		}
-		//focused中のマーカーを表示するようにマップの表示領域を変更する
-		function fitMapBoundsFocusedMarkers(){
-			// マーカーが一つでもある場合trueになる
-			var flgMarkerFound = false;
 
-			//	データの担当者一つ一つに対して
-			kData.data.forEach(function(dataRow, id){
-				if (isTantouClassed(dataRow['担当者'], 'focused')){
-					if (markerArr[id]){
-						// 一つ目の場合、myBoundを初期化
-						if (!flgMarkerFound) myBounds = null;
-						flgMarkerFound = true;
+		// --------------------------------------------------------------------
+		//  setswitchDiv
+		// --------------------------------------------------------------------
+		// 担当切替セレクトボックスを設置する
+		function setswitchDiv(){
+			// DOMの取得
+			var $switchSelect = $('#switchSelect');
 
-						//表示領域を広げる
-						mymapExpandBounds(markerArr[id]);
-					}
-				}
+			// 一度中身を空にする
+			$switchSelect.empty();
+
+			// 担当者一覧でオプションを作成する
+			kData.getList('担当者', true).forEach(function(tantou){
+				$('<option>')
+					.text(tantou)
+					.appendTo($switchSelect);
 			});
+
+			// 担当者が変更された時のイベント
+			$switchSelect.change(function(){
+				// 担当者名を取得
+				var tantou = $(this).find('option:selected').text();
+
+				// 指定した担当スパンをフォーカス状態にする
+				changeFocusedTantou(tantou)
+
+			});
+
+			// 強制的に変更イベントを起こす
+			setTimeout(
+				function(){
+					$switchSelect.trigger('change');
+				},1000);
 		}
 
 		// --------------------------------------------------------------------
 		function getMyMapOption(){
-
-			// TODO リテラルをここに書くのか
 			var mapCenter = {lat:35.5, lng:139.6};
 			var	mapzoom = 14;
-
 			return {
 				center:mapCenter,
 				zoom:mapzoom,
 				mapTypeControl:false,
+				streetViewControl:false,
 				streetViewControlOptions:{
 					position: google.maps.ControlPosition.RIGHT_TOP,
 				},
@@ -586,35 +670,6 @@
 	    	position: google.maps.ControlPosition.BOTTOM_LEFT
 	  		},
 			};
-		}
-		// --------------------------------------------------------------------
-		//  setswitchDiv
-		// --------------------------------------------------------------------
-		function setswitchDiv(){
-			var $switchSelect = $('#switchSelect');
-			//
-			$switchSelect.empty();
-			//
-			kData.getList('担当者', true).forEach(function(tantou){
-				$('<option>')
-					.text(tantou)
-					.appendTo($switchSelect);
-			});
-
-			$switchSelect.change(function(){
-					var tantou = $(this).find('option:selected').text();
-					tantou = selectorEscape(tantou);
-
-					$('#' + tantou).siblings().removeClass('focused');
-
-					$('#' + tantou).toggleClass('focused');
-
-					refleshTantouSpan();
-
-					setTimeout(fitMapBoundsFocusedMarkers,300);
-
-			})
-			$switchSelect.trigger('change');
 		}
 
 		// --------------------------------------------------------------------
@@ -634,7 +689,7 @@
 		// 切替スライドのイベントを設定する
 		setSlideDivEvents();
 
-		// data ObjectArray オブジェクト dataImportないで初期化される
+		// kData ObjectArrayオブジェクト dataImportないで初期化される
 		var kData;
 
 		// マーカー配列を用意
@@ -651,7 +706,8 @@
 
 		// 呼出パラメータでマップを生成する
 		if (location.hash.length >= 0){
-			importData(decodeURI(location.hash.substring(1)), true ,true);// default true true
+			importData(decodeURI(location.hash.substring(1)),
+			true, true ,true);// default true true
 		}
 	})();
 
