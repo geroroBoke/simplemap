@@ -132,6 +132,19 @@ body, html{
   font-size: 1.2rem;
   min-width: 10rem;
 }
+#dialogDiv{
+  position: fixed;
+  padding: 20px;
+  top: 1rem;
+  left: 140px;
+  width: calc(100% - 200px);
+  height: 200px;
+  text-align: center;
+  line-height:2rem;
+  background: #ccc;
+  border-radius: 15px;
+  display: none;
+}
 
 .marker{
   display: inline-block;

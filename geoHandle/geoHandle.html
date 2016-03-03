@@ -76,6 +76,13 @@
 		<input type="checkbox" id="dataChkMansion" checked="true">
 			<label for="dataChkMansion">マンション名を削除</label>
 	</div>
+	<!-- 汎用ダイアログボックス -->
+	<div id="dialogDiv">
+		<div id="dialogTitle">ダイアログのタイトル</div>
+		<div id="dialogMessage">ダイアログのメッセージ本文</div>
+		<div><select id="dialogSelect"></select></div>
+		<button id="dialogOKBtn" >プロット開始</button>
+	</div>
 <script>
 // -----------------------------------------------------------
 	(function(){
@@ -466,6 +473,11 @@
 			if (!data.getList(myPlotBy)) return;
 			if (!data.getList(myGroupBy)) return;
 			if (!data.getList(mySortBy)) return;
+			
+			// TODO
+			setDialogDiv('title', 'message', ['1', '2', '3'], function(msg){
+					alert(msg)
+			});
 
 			// フィールド名と等しい値がある行は削除する
 			data.data = data.data.filter(function(row){
@@ -496,6 +508,9 @@
 		function initializeMap(){
 			// データがなければ終了
 			if (!myData) return;
+			
+			// タイトルの設定
+			document.title = myTitle;
 
 			// 担当者ボックスの初期化
 			settantouDiv();
@@ -562,6 +577,40 @@
 				}, 1);
 			}
 		}
+		// --------------------------------------------------------------------
+		//  dialogDiv
+		// --------------------------------------------------------------------
+		function setDialogDiv(title, message, arrOptions, onOK){
+			// div要素の表示
+			$('#dialogDiv').show();
+			
+			// タイトルの設定
+			$('#dialogTitle').text(title);
+			
+			// メッセ―ジの設定
+			$('#dialogMessage').text(message);
+			
+			// セレクトボックスアイテムの設定
+			$('#dialogSelect').empty();
+			arrOptions.forEach(function(option){
+				$('#dialogSelect').append(
+					$('<option>').text(option).val(option)
+				);
+			});
+			
+			// OKボタンを押したときのイベント
+			$('#dialogOKBtn').click(function(){
+				
+				// div要素の非表示
+				$('#dialogDiv').hide();
+				
+				// セレクトオプションを戻り値にしてcallbackに返す
+				if (onOK) onOK( $('#dialogSelect').val() );
+				
+			});
+			
+		}
+		
 		// --------------------------------------------------------------------
 		//  searchDiv
 		// --------------------------------------------------------------------
