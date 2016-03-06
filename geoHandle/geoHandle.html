@@ -75,13 +75,14 @@
 			<label for="dataChkTrim">ゴミ文字を削除</label>
 		<input type="checkbox" id="dataChkMansion" checked="true">
 			<label for="dataChkMansion">マンション名を削除</label>
+		<button id="dataBtnReset" >再構成</button>
 	</div>
 	<!-- 汎用ダイアログボックス -->
 	<div id="dialogDiv">
 		<div id="dialogTitle">ダイアログのタイトル</div>
 		<div id="dialogMessage">ダイアログのメッセージ本文</div>
 		<div><select id="dialogSelect"></select></div>
-		<button id="dialogOKBtn" >プロット開始</button>
+		<button id="dialogOKBtn" >OK</button>
 	</div>
 <script>
 // -----------------------------------------------------------
@@ -148,11 +149,14 @@
 
 		// 指定した担当スパンをフォーカス状態にする
 		function changeFocusedTantou(tantou){
+		
 			// セレクタに使う記号をエスケープする
 			tantou = selectorEscape(tantou);
+			
 			// 他の担当スパンのフォーカスを消す
 			$('#' + tantou).siblings().removeClass('focused');
 			$('#' + tantou).addClass('focused');
+			
 			// スパン変更時のアクションを実行
 			refleshTantouSpan();
 		}
@@ -407,7 +411,6 @@
 		// --------------------------------------------------------------------
 		//  parseOption
 		// --------------------------------------------------------------------
-
 		function retriveParseOption(srcText, getField){
 			var result = '';
 			// 行ごとに分解
@@ -419,7 +422,6 @@
 					if (param[0] == getField ) result =  param[1];
 				}
 			});
-			if (!result) result = getDefaultParseOption(getField);
 			return result;
 		}
 
@@ -453,32 +455,36 @@
 		//  importData
 		// --------------------------------------------------------------------
 		// 渡されたテキストをパースして地図プロットする
-		function importData(dataText, isUniqueRecord, isTrimGarbage, isTrimMansion){
+		function importData(dataText, isUniqueRecord, isTrimGarbage, isTrimMansion, isReset){
 
 			// テキストが空なら終了
 			if (!dataText) return;
 
-			// #制御文からパース設定を取得する 		  // #制御文を取り除く
-			myTitle = retriveParseOption(dataText, 'title');
-			myGroupBy = retriveParseOption(dataText, 'groupby');
-			mySortBy = retriveParseOption(dataText, 'sortby');
-			myPlotBy = retriveParseOption(dataText, 'plotby');
-			dataText = trimParseOptions(dataText);
+			// #制御文からパース設定を取得する 		  
+			if (retriveParseOption(dataText, 'title')) myTitle = retriveParseOption(dataText, 'title');
+			if (retriveParseOption(dataText, 'groupby')) myGroupBy = retriveParseOption(dataText, 'groupby');
+			if (retriveParseOption(dataText, 'sortby')) mySortBy = retriveParseOption(dataText, 'sortby');
+			if (retriveParseOption(dataText, 'plotby')) myPlotBy = retriveParseOption(dataText, 'plotby');
+			dataText = trimParseOptions(dataText);// 最後に#制御文を取り除く
 
 			// テキストをパースする
 			var data = dataHandle.csvParse(dataText, '\t', true);
 
-			// 正しいフィールドを持っているか確認
+			// パースできていなければ終了
 			if (!data) return;
-			if (!data.getList(myPlotBy)) return;
-			if (!data.getList(myGroupBy)) return;
-			if (!data.getList(mySortBy)) return;
 			
-			// TODO
-			setDialogDiv('title', 'message', ['1', '2', '3'], function(msg){
-					alert(msg)
-			});
+			// データ上に指定フィールドが無ければ、フィールド再選択ダイアログボックスを起動して、再起動
+			if ( isReset
+				|| data.getList(myPlotBy)[0] == undefined 
+				|| data.getList(myGroupBy)[0] == undefined  
+				||  data.getList(mySortBy)[0] == undefined ){
+					getMyParseOptionsByDialog(data, function(){
+						importData(dataText, isUniqueRecord, isTrimGarbage, isTrimMansion);
+					});
+					return;
+			}
 
+			
 			// フィールド名と等しい値がある行は削除する
 			data.data = data.data.filter(function(row){
 				if (row[myPlotBy] ===myPlotBy) return false;
@@ -500,7 +506,70 @@
 			// 新しいデータでマップの初期化をしなおす
 			initializeMap();
 		}
-
+		
+		
+		// ダイアログボックスからparseOptionを取得する
+		function getMyParseOptionsByDialog(data, onFinish){
+		
+			// doNextActionで実行する関数一覧
+			var arrFunc = [
+				getPlotByOption, 
+				getGroupByOption, 
+				getSortByOption
+			];
+			var idFunc = 0;
+		
+			// 最初の関数を実行	
+			doNextAction();
+			
+			// OKを押されるたびに次の関数を実行する
+			function doNextAction(){
+				if (idFunc < arrFunc.length ) {
+					arrFunc[idFunc++]();
+				} else{
+					// 終了指定アクション
+					onFinish();
+				}
+			}
+			
+			function getPlotByOption(){
+				setDialogDiv(
+					'『住所』フィールドの選択',
+					'マーカーの座標を示す住所などが格納されているフィールドを選択してください', 
+					Object.keys(data.data[0]), 
+					function(option){
+						myPlotBy = option;
+						doNextAction();
+					},
+					myPlotBy
+				);		
+			}
+			function getGroupByOption(){
+				setDialogDiv(
+					'『グループ』フィールドの選択', 
+					'マーカーの色分けの基準とするフィールドを選択してください', 
+					Object.keys(data.data[0]), 
+					function(option){
+						myGroupBy = option;
+						doNextAction();
+					},
+					myGroupBy
+				);		
+			}
+			function getSortByOption(){
+				setDialogDiv(
+					'『順番』フィールドの選択', 
+					'並べ替えの基準とするフィールドを選択してください', 
+					Object.keys(data.data[0]), 
+					function(option){
+						mySortBy = option;
+						doNextAction();
+					},
+					mySortBy
+				);		
+			}
+		}
+		
 		// --------------------------------------------------------------------
 		//  initializeMap
 		// --------------------------------------------------------------------
@@ -544,6 +613,7 @@
 		// --------------------------------------------------------------------
 		// データ取込フォーム dataDiv関連のイベントを設定する
 		function setDataDivEvents(){
+			// プロット開始ボタン
 			$('#dataBtnImport').click(function(){
 				toggleDataDiv();
 				importData(
@@ -553,10 +623,26 @@
 					$('#dataChkMansion').prop('checked')
 				);
 			});
+			
+			// 再構成ボタン
+			$('#dataBtnReset').click(function(){
+				toggleDataDiv();
+				importData(
+					$('#dataText').val(),
+					$('#dataChkUnique').prop('checked'),
+					$('#dataChkTrim').prop('checked'),
+					$('#dataChkMansion').prop('checked'),
+					true// reset true 
+				);			
+			});
+			
+			// 左上の×ボタン
 			$('#dataClose').click(toggleDataDiv)
 		}
+		
 		// dataDivの表示・非表示を切り返す
 		function toggleDataDiv(){
+		
 			// DOMの取得
 			var $dataDiv = $('#dataDiv');
 			var $dataText = $('#dataText');
@@ -565,22 +651,22 @@
 			$dataDiv.toggle();
 
 			// 表示ＯＮならテキストにフォーカス等の操作をする
-			if($dataDiv.is(':visible')){
+			if ( $dataDiv.is(':visible') ){
 				setTimeout(function(){
 					// 現在のデータをCSVにして再表示
-					if (myData)
-						$dataText.val( outputParseOptionText()
-							+ dataHandle.csvOutput(myData.data, '\t')
-						);
+					if (myData) $dataText.val(dataHandle.csvOutput(myData.data, '\t') );
 					$dataText.focus();
 					// $dataText.append('');
 				}, 1);
 			}
 		}
 		// --------------------------------------------------------------------
-		//  dialogDiv
+		//  dialogDiv	
 		// --------------------------------------------------------------------
-		function setDialogDiv(title, message, arrOptions, onOK){
+		//TODO 引数をオブジェクトでうける
+		//TODO セレクトボックス以外にも対応する（テキストボックスで名前を入力するなど）
+		function setDialogDiv(title, message, arrOptions, onOK, optionDefault){
+		
 			// div要素の表示
 			$('#dialogDiv').show();
 			
@@ -597,9 +683,10 @@
 					$('<option>').text(option).val(option)
 				);
 			});
+			$('#dialogSelect').val(optionDefault);
 			
 			// OKボタンを押したときのイベント
-			$('#dialogOKBtn').click(function(){
+			$('#dialogOKBtn')[0].onclick = function(){
 				
 				// div要素の非表示
 				$('#dialogDiv').hide();
@@ -607,7 +694,7 @@
 				// セレクトオプションを戻り値にしてcallbackに返す
 				if (onOK) onOK( $('#dialogSelect').val() );
 				
-			});
+			};
 			
 		}
 		
@@ -696,6 +783,7 @@
 
 		// データをスライド情報に反映させる
 		function applySlideData(curRow){
+		
 			// slideNowAddressに表示させる
 			$('#slideNowAddress').text( curRow[myPlotBy]);
 
@@ -808,7 +896,7 @@
 		// googleマップの読込み
 		var myMap = new google.maps.Map($('#map')[0], getMyMapOption());
 
-		// URIに#以降があればそのパラメータでdataImportを行う
+		// URIに#以降があればそのパラメータでimportDataを行う
 		if (location.hash.length >= 0){
 			importData(decodeURI(location.hash.substring(1)),
 			true, true ,true);// default true true

@@ -134,16 +134,28 @@ body, html{
 }
 #dialogDiv{
   position: fixed;
-  padding: 20px;
+  padding: 50px 10px;
   top: 1rem;
   left: 140px;
   width: calc(100% - 200px);
-  height: 200px;
+  /*height: 200px;*/
   text-align: center;
-  line-height:2rem;
+  line-height:3rem;
   background: #ccc;
   border-radius: 15px;
   display: none;
+}
+#dialogTitle{
+  font-size: 2rem;
+}
+#dialogDiv div{
+}
+#dialogSelect{
+  font-size: 1.5rem;
+}
+#dialogOKBtn{
+  width: 10rem;
+  height: 3rem;
 }
 
 .marker{
