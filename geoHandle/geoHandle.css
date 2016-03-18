@@ -220,7 +220,10 @@ body, html{
 #tantouDiv{
   display:none;
 }
-.tantou{
+.tantouSpan{
+}
+
+.tantouItem{
   margin: 8px auto;
   display:block;
   border: 1px solid;
@@ -232,12 +235,15 @@ body, html{
   cursor: pointer;
   background-color: #fff;
 }
-.tantou.marked{
+
+.marked .tantouItem{
   background-color: #edf;
 }
-.tantou.focused{
+
+.focused .tantouItem{
   background-color: #ffa;
 }
+
 .clickable{
   cursor: pointer;
   user-select: none; /* CSS3 */

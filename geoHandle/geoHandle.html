@@ -46,7 +46,11 @@
 	</div>
 	<!-- サーチボックス -->
 	<div id="searchDiv">
-		<input type="textbox" id = "searchText" value="" size="40"><button id="searchButton">場所を追加</button>
+		<select id="searchSelect" ></select>
+		<input type="textbox" id ="searchGroup" value="" size="5" disabled="disabled">
+		<input type="textbox" id ="searchOrderNo" value="" size="3">
+		<input type="textbox" id = "searchAddress" value="" size="40">
+		<button id="searchButton">追加</button>
 	</div>
 	<!-- 住所切替スライド -->
 	<div id="slideDiv">
@@ -125,7 +129,7 @@
 		    return val.replace(/[ !"#$%&'()*+,.\/:;<=>?@\[\\\]^`{|}~]/g, '\\$&');
 		}
 
-		// 配列のレコード重複をなくす　 TODO 無理やりすぎる？
+		// 配列のレコード重複をなくす  TODO 無理やりすぎる？
 		function getUniqueRecordArray(array) {
 			var storage = {};
 			return array.filter(function(value){
@@ -149,21 +153,21 @@
 
 		// 指定した担当スパンをフォーカス状態にする
 		function changeFocusedTantou(tantou){
-		
+
 			// セレクタに使う記号をエスケープする
 			tantou = selectorEscape(tantou);
-			
+
 			// 他の担当スパンのフォーカスを消す
 			$('#' + tantou).siblings().removeClass('focused');
 			$('#' + tantou).addClass('focused');
-			
+
 			// スパン変更時のアクションを実行
 			refleshTantouSpan();
 		}
 
 		// focused担当者のデータ一覧を取得
 		function getFocusedTantouData(){
-			var tantou = $('.tantou.focused').attr('id');
+			var tantou = $('.tantouSpan.focused').attr('id');
 			var newData = myData.data.filter(function(row){
 				return row[myGroupBy]==tantou}
 			);
@@ -177,7 +181,7 @@
 			//	データの担当者一つ一つに対して
 			var flgFirst = false;
 			myData.data.forEach(function(dataRow, id){
-				if (isTantouClassed(dataRow[myGroupBy], 'focused')){
+				if (isTantouSpanClassed(dataRow[myGroupBy], 'focused')){
 					if (myMarkerArr[id]){
 						// 一つ目の場合、myBoundを初期化
 						if (!flgFirst) myBounds = null;
@@ -200,10 +204,10 @@
 
 
 		// 担当者スパンに特定のクラスが付いているか判別する
-		function isTantouClassed(tantou, className){
+		function isTantouSpanClassed(tantou, className){
 			if (typeof tantou !== 'string') return false;
 			var flg = false;
-			$('.tantou').each(function(){
+			$('.tantouSpan').each(function(){
 				if ($(this).hasClass(className) && $(this).attr('id') == tantou ){
 					flg = true;
 				}
@@ -212,25 +216,25 @@
 		}
 
 		// --------------------------------------------------------------------
-		//  TantouSpan
+		//  TantouDiv
 		// --------------------------------------------------------------------
-		// 担当者ボックスを初期化する
-		function settantouDiv(){
+		// 担当者DIVを初期化する
+		function setTantouDiv(){
 
-			// エレメントの取得
+			// 担当者DIVの取得
 			var $tantouDiv = $('#tantouDiv');
 
 			// 中の要素を削除する
 			$tantouDiv.empty();
 
-			// 各担当者のボタンを作成する
+			// 各担当者のtantouSpanを作成する
 			myData.getList(myGroupBy, true).forEach(function(element){
 				var $tantouSpan = createTantouSpan(element);
 				$tantouSpan.click(event_TantouSpanClick);
 				$tantouSpan.appendTo($tantouDiv);
 			});
 
-			// すべて表示ボタンを作成する
+			// すべて表示のtantouSpan作成する
 			var $selallSpan = createTantouSpan('すべて表示');
 			$selallSpan.click(event_SelallSpanClick);
 			$selallSpan.appendTo($tantouDiv);
@@ -239,22 +243,25 @@
 			refleshTantouSpan();
 		}
 
+		// 表示非表示を切り替える
 		function toggleTantouDiv(){
 			$('#tantouDiv').toggle();
 		}
 
 		// 担当者の名前一覧のspanをつくる
 		function createTantouSpan(tantouName){
-			var $span = $('<span>').attr({id: tantouName, class: 'tantou marked'});
-			$span.append($('<span>').css('background-color', getTantouCssColorText(tantouName)).text('__'));
-			$span.append(tantouName);
-			return $span;
+			// コンテイナーに要素をいれていく
+			var $container = $('<div>').attr({id: tantouName, class: 'tantouSpan marked'});
+			//
+			var $span = $('<span>')
+				.attr({class: 'tantouItem'})
+				.append($('<span>').css('background-color', getTantouCssColorText(tantouName)).text('__'))
+				.append(tantouName);
+
+			$container.append($span);
+			return $container;
 		}
 
-
-		// --------------------------------------------------------------------
-		// event_SelallSpanClick
-		// --------------------------------------------------------------------
 		// すべてを表示ボタンがクリックされた時
 		function event_SelallSpanClick(){
 
@@ -272,9 +279,7 @@
 			refleshTantouSpan();
 
 		}
-		// --------------------------------------------------------------------
-		// event_TantouSpanClick
-		// --------------------------------------------------------------------
+
 		// TantouSpanがクリックされた時 markedクラスを付加する
 		function event_TantouSpanClick(){
 
@@ -291,11 +296,14 @@
 			// スライドDIVを消す
 			$('#slideDiv').hide();
 
-			// フォーカスされているスパンについて
-			if ($('.tantou.focused')[0]){
+			// フォーカスされているスパン
+			var $focused = $('.tantouSpan.focused');
+
+			// フォーカスされているスパンが存在すれば以下の
+			if ($focused[0]){
 
 				// 優先的に住所を調べる
-				GeoHandle.addAddress(myData.getList(myPlotBy, true, myGroupBy, $('.tantou.focused').attr('id')), true);
+				GeoHandle.addAddress(myData.getList(myPlotBy, true, myGroupBy, $focused.attr('id')), true);
 
 				// スライドの表示IDを管理・反映
 				manageSlide(0, 0);
@@ -381,8 +389,8 @@
 			myData.data.forEach(function(dataRow, id){
 
 				// 担当者のスパンがmarked, focusedフラグの取得
-				var isMarked = isTantouClassed(dataRow[myGroupBy], 'marked') ;
-				var isFocused = isTantouClassed(dataRow[myGroupBy], 'focused');
+				var isMarked = isTantouSpanClassed(dataRow[myGroupBy], 'marked') ;
+				var isFocused = isTantouSpanClassed(dataRow[myGroupBy], 'focused');
 
 				// 要マーカー作成
 				if ( isMarked || isFocused){
@@ -460,7 +468,7 @@
 			// テキストが空なら終了
 			if (!dataText) return;
 
-			// #制御文からパース設定を取得する 		  
+			// #制御文からパース設定を取得する
 			if (retriveParseOption(dataText, 'title')) myTitle = retriveParseOption(dataText, 'title');
 			if (retriveParseOption(dataText, 'groupby')) myGroupBy = retriveParseOption(dataText, 'groupby');
 			if (retriveParseOption(dataText, 'sortby')) mySortBy = retriveParseOption(dataText, 'sortby');
@@ -472,11 +480,11 @@
 
 			// パースできていなければ終了
 			if (!data) return;
-			
+
 			// データ上に指定フィールドが無ければ、フィールド再選択ダイアログボックスを起動して、再起動
 			if ( isReset
-				|| data.getList(myPlotBy)[0] == undefined 
-				|| data.getList(myGroupBy)[0] == undefined  
+				|| data.getList(myPlotBy)[0] == undefined
+				|| data.getList(myGroupBy)[0] == undefined
 				||  data.getList(mySortBy)[0] == undefined ){
 					getMyParseOptionsByDialog(data, function(){
 						importData(dataText, isUniqueRecord, isTrimGarbage, isTrimMansion);
@@ -484,7 +492,7 @@
 					return;
 			}
 
-			
+
 			// フィールド名と等しい値がある行は削除する
 			data.data = data.data.filter(function(row){
 				if (row[myPlotBy] ===myPlotBy) return false;
@@ -506,22 +514,22 @@
 			// 新しいデータでマップの初期化をしなおす
 			initializeMap();
 		}
-		
-		
+
+
 		// ダイアログボックスからparseOptionを取得する
 		function getMyParseOptionsByDialog(data, onFinish){
-		
+
 			// doNextActionで実行する関数一覧
 			var arrFunc = [
-				getPlotByOption, 
-				getGroupByOption, 
+				getPlotByOption,
+				getGroupByOption,
 				getSortByOption
 			];
 			var idFunc = 0;
-		
-			// 最初の関数を実行	
+
+			// 最初の関数を実行
 			doNextAction();
-			
+
 			// OKを押されるたびに次の関数を実行する
 			function doNextAction(){
 				if (idFunc < arrFunc.length ) {
@@ -531,45 +539,45 @@
 					onFinish();
 				}
 			}
-			
+
 			function getPlotByOption(){
 				setDialogDiv(
 					'『住所』フィールドの選択',
-					'マーカーの座標を示す住所などが格納されているフィールドを選択してください', 
-					Object.keys(data.data[0]), 
+					'マーカーの座標を示す住所などが格納されているフィールドを選択してください',
+					Object.keys(data.data[0]),
 					function(option){
 						myPlotBy = option;
 						doNextAction();
 					},
 					myPlotBy
-				);		
+				);
 			}
 			function getGroupByOption(){
 				setDialogDiv(
-					'『グループ』フィールドの選択', 
-					'マーカーの色分けの基準とするフィールドを選択してください', 
-					Object.keys(data.data[0]), 
+					'『グループ』フィールドの選択',
+					'マーカーの色分けの基準とするフィールドを選択してください',
+					Object.keys(data.data[0]),
 					function(option){
 						myGroupBy = option;
 						doNextAction();
 					},
 					myGroupBy
-				);		
+				);
 			}
 			function getSortByOption(){
 				setDialogDiv(
-					'『順番』フィールドの選択', 
-					'並べ替えの基準とするフィールドを選択してください', 
-					Object.keys(data.data[0]), 
+					'『順番』フィールドの選択',
+					'並べ替えの基準とするフィールドを選択してください',
+					Object.keys(data.data[0]),
 					function(option){
 						mySortBy = option;
 						doNextAction();
 					},
 					mySortBy
-				);		
+				);
 			}
 		}
-		
+
 		// --------------------------------------------------------------------
 		//  initializeMap
 		// --------------------------------------------------------------------
@@ -577,12 +585,12 @@
 		function initializeMap(){
 			// データがなければ終了
 			if (!myData) return;
-			
+
 			// タイトルの設定
 			document.title = myTitle;
 
 			// 担当者ボックスの初期化
-			settantouDiv();
+			setTantouDiv();
 
 			setswitchDiv();
 
@@ -623,7 +631,7 @@
 					$('#dataChkMansion').prop('checked')
 				);
 			});
-			
+
 			// 再構成ボタン
 			$('#dataBtnReset').click(function(){
 				toggleDataDiv();
@@ -632,17 +640,17 @@
 					$('#dataChkUnique').prop('checked'),
 					$('#dataChkTrim').prop('checked'),
 					$('#dataChkMansion').prop('checked'),
-					true// reset true 
-				);			
+					true// reset true
+				);
 			});
-			
+
 			// 左上の×ボタン
 			$('#dataClose').click(toggleDataDiv)
 		}
-		
+
 		// dataDivの表示・非表示を切り返す
 		function toggleDataDiv(){
-		
+
 			// DOMの取得
 			var $dataDiv = $('#dataDiv');
 			var $dataText = $('#dataText');
@@ -661,21 +669,21 @@
 			}
 		}
 		// --------------------------------------------------------------------
-		//  dialogDiv	
+		//  dialogDiv
 		// --------------------------------------------------------------------
 		//TODO 引数をオブジェクトでうける
 		//TODO セレクトボックス以外にも対応する（テキストボックスで名前を入力するなど）
 		function setDialogDiv(title, message, arrOptions, onOK, optionDefault){
-		
+
 			// div要素の表示
 			$('#dialogDiv').show();
-			
+
 			// タイトルの設定
 			$('#dialogTitle').text(title);
-			
+
 			// メッセ―ジの設定
 			$('#dialogMessage').text(message);
-			
+
 			// セレクトボックスアイテムの設定
 			$('#dialogSelect').empty();
 			arrOptions.forEach(function(option){
@@ -684,46 +692,121 @@
 				);
 			});
 			$('#dialogSelect').val(optionDefault);
-			
+
 			// OKボタンを押したときのイベント
 			$('#dialogOKBtn')[0].onclick = function(){
-				
+
 				// div要素の非表示
 				$('#dialogDiv').hide();
-				
+
 				// セレクトオプションを戻り値にしてcallbackに返す
 				if (onOK) onOK( $('#dialogSelect').val() );
-				
+
 			};
-			
+
 		}
-		
+
 		// --------------------------------------------------------------------
 		//  searchDiv
 		// --------------------------------------------------------------------
 		// サーチボックス 検索場所に新しくマーカーを立てる
 		function setSearchDivEvents(){
+
+			// 検索した住所をマーカーにする
 			$('#searchButton').click(addMarkerSearchDiv);
-			$('#searchText').keypress(setFocusSearchBtn);
+
+			// 順番テキストにフォーカスを移す
+			$('#searchGroup').keypress(function(e){
+				onPressEnterFocusTo(e, '#searchOrderNo');
+			});
+
+			// 住所テキストにフォーカスを移す
+			$('#searchOrderNo').keypress(function(e){
+				onPressEnterFocusTo(e, '#searchAddress');
+			});
+
+			// 検索ボタンにフォーカスを移す
+			$('#searchAddress').keypress(function(e){
+				onPressEnterFocusTo(e, '#searchButton');
+			});
+
+
+			// 順番テキストにフォーカスを移す
+			$('#searchGroup').keypress(function(e){
+				onPressEnterFocusTo(e, '#searchOrderNo');
+			});
+
+			// セレクトボックスがnewGroupの時、searchGroupを有効にしてフォーカスする
+			$('#searchSelect').change(onSearchSelectChanged);
 		}
 
+		function onPressEnterFocusTo(e, selector){
+			if ( e.keyCode == 13 ) {
+				$(selector).focus();
+				e.preventDefault();
+			}
+		}
+
+		// セレクトボックスがnewGroupの時、searchGroupを有効にしてフォーカスする
+		function onSearchSelectChanged(){
+
+			var flag = ($(this).val() === 'newGroup');
+
+			$('#searchGroup').prop('disabled', flag !== true);
+
+			if (flag){
+				$('#searchGroup').focus();
+			}
+		}
+
+		// エンターを押されたら検索ボタンにフォーカスを移す
 		function setFocusSearchBtn(e){
 			if ( e.keyCode == 13 ) {
 				$('#searchButton').focus();
 				e.preventDefault();
 			}
 		}
-
+		function setFocusSearchBtn(e){
+			if ( e.keyCode == 13 ) {
+				$('#searchButton').focus();
+				e.preventDefault();
+			}
+		}
 		function toggleSearchDiv(){
+			// 表示を切替る
 			$('#searchDiv').toggle();
+
+			// 選択ボックスの要素を初期化する
+			if (myData){
+				var $select = $('#searchSelect');
+				$select.empty();
+				$select.append(// 各グループを入れる
+					$.map(myData.getList(myGroupBy, true), function(item, id){
+						return $('<option>', {value: item, text: item});
+					})
+				);
+				$select.append(// 新しく追加を追加
+					$('<option>', {value: 'newGroup', text: 'newGroup'})
+				);
+			}
 		}
 
 		// 検索した住所をマーカーにする
 		function addMarkerSearchDiv(){
+
+			// searchDiv1から値を取得する
+			var valGroup = $('#searchSelect option:selected').text();
+			if (valGroup === 'newGroup') valGroup = $('#searchGroup').val();
+			var valOrderNo = $('#searchOrderNo').val();
+			var valAddress = $('#searchAddress').val();
+
+			// 追加用レコードを作成する追加する
 			var addData = {};
-			addData[myGroupBy] = '他';
-			addData[mySortBy] = '';
-			addData[myPlotBy] = $('#searchText').val();
+			addData[myGroupBy] = valGroup;
+			addData[mySortBy] = valOrderNo;
+			addData[myPlotBy] = valAddress;
+
+			// プロットデータにレコードをプッシュする
 			if (!myData){
 				myData = new dataHandle.ObjectArray([ addData]);
 			}else{
@@ -732,14 +815,14 @@
 
 			// 現在の担当スパン状態を取得する
 			var isSelAllMarked = $('#すべて表示').hasClass('marked');
-			var tantouFocused = $('.tantou.focused').attr('id');
+			var tantouFocused = $('.tantouSpan.focused').attr('id');
 
 			// マップを初期化し直す
 			initializeMap();
 
 			// 担当スパン状態を復元する
 			if ( isSelAllMarked ) $('#すべて表示').addClass('marked');
-			$('.tantou').each(function(){
+			$('.tantouSpan').each(function(){
 				if ($(this).attr('id') == tantouFocused) $(this).addClass('focused');
 			});
 
@@ -783,7 +866,7 @@
 
 		// データをスライド情報に反映させる
 		function applySlideData(curRow){
-		
+
 			// slideNowAddressに表示させる
 			$('#slideNowAddress').text( curRow[myPlotBy]);
 
