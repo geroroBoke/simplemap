@@ -198,8 +198,8 @@ body, html{
   /* display: inline-block; */
   display: none;
   -moz-user-select: none; /* Firefox */
-  -webkit-user-select: none; /* SafariAChrome‚È‚Ç */
-  -ms-user-select: none; /* IE10‚©‚ç‚ç‚µ‚¢ */
+  -webkit-user-select: none; /* Safariï¿½AChromeï¿½È‚ï¿½ */
+  -ms-user-select: none; /* IE10ï¿½ï¿½ï¿½ï¿½ï¿½ç‚µï¿½ï¿½ */
 }
 .markerComment.markerFocused{
   display: inline-block;
@@ -252,4 +252,9 @@ body, html{
   color:blue;
   font-weight:bold;
   opacity: .5;
+}
+
+.infoDiv{
+  width: 250px;
+  overflow: hidden;
 }
