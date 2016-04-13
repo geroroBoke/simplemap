@@ -718,7 +718,7 @@
 		// --------------------------------------------------------------------
 		//  searchDiv
 		// --------------------------------------------------------------------
-		// サーチボックス
+		// サーチボックスにイベントを追加する
 		function setSearchDivEvents(){
 
 			// 検索した住所をマーカーにする
@@ -741,8 +741,10 @@
 
 			// セレクトボックスが変更された時に呼び出される
 			$('#searchSelect').change(onSearchSelectChanged);
+
 		}
 
+		// Enterキーが押されたら指定のアイテムにフォーカスを移す
 		function onPressEnterFocusTo(e, selector){
 			if ( e.keyCode == 13 ) {
 				$(selector).focus();
@@ -755,18 +757,18 @@
 			// 選択中のグループの取得
 			var value = $(this).val();
 
-			// newGroupが選択されているか？
-			var isNewGroup = (value === 'newGroup');
-
-			if (isNewGroup){
+			// newGroup選択時のアクション
+			if (value === 'newGroup'){
 				// グループテキストを有効化してフォーカス
 				$('#searchGroup').prop('disabled', false);
-				// グループテキストをフォーカス
-				$('#searchGroup').focus();
 
-				// 順番欄に最大値＋１を格納する
+				// グループテキストにEtcをとりあえず入れておく
+				$('#searchGroup').val('etc');
+
+				// 順番欄に１を格納する
 				$('#searchOrderNo').val(1);
 
+			// それ以外の時のアクション
 			}else{
 				// グループテキストを無効化
 				$('#searchGroup').prop('disabled', true).val('');
@@ -792,7 +794,6 @@
 
 			// searchSelectの要素を初期化する
 			refleshSearchSelect();
-
 		}
 
 		// searchSelectの要素を初期化する
@@ -808,16 +809,19 @@
 				}));
 			}
 
-			// 新しく要素を追加
+			// newGroupを追加
 			$select.append(
 				$('<option>', {value: 'newGroup', text: 'newGroup'})
 			);
 
-			// イベントを起こす
+			// フラグがなければnewGroup選択イベントを起こす
 			if (!stopChangeEvent) {
 				$select.val('newGroup');
 				$select.change();
 			}
+
+			// すぐ検索できるようにサーチボックスにフォーカスをあててておく
+			$('#searchAddress').focus();
 		}
 
 		// 検索した住所をマーカーにする
