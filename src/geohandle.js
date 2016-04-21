@@ -123,7 +123,7 @@ GeoHandle.onGetResult = function(request, result){
 
   // 次の検索を開始する
   GeoHandle.doNextSearch();
-  
+
 }
 
 //geocode callback
@@ -177,11 +177,11 @@ GeoHandle.getResultIfStatusOK =function(results, status){
       saveResult['latlng'] = results[0].geometry.location;
       saveResult['address'] = GeoHandle.getGcrAddressText(results[0]);
       return saveResult;
-      
+
     case google.maps.GeocoderStatus.OVER_QUERY_LIMIT:
     //  クエリーを出しすぎて怒られた場合
       return false;　        // falseでリターンする
-      
+
     default:
     // その他エラーの場合 // TODO エラー処理を書く
       //return GeoHandle.getEmptyResult();// 失敗用のデータをcacheに格納
@@ -206,7 +206,7 @@ GeoHandle.getGcrAddressText = function(gcResult){
     }else {
         stradr = lname + stradr;    //それ以外は普通に追加する
     }
-    
+
     // 番地以上のものをいれたらそこで終わりにする
     if (stradr.length > 0 &&
       cmpnt.types[0].match(/sublocality_level_[2-9]/)==null) break;
