@@ -178,7 +178,7 @@ dataHandle.csvOutput = function(data, chrDelimiter){
   //	任意のカラムを配列として返すメソッド
   // dataHandle.ObjectArray.prototype.getList = function(getLabel, isUnique, findLabel, findValue){
   dataHandle.ObjectArray.prototype.getList = function(getLabel, isUnique, findLabel, findValue, sortLabel, isAscend){
-  
+
     // 編集用のデータを取得
     var tempObjArr = this;
 
@@ -204,7 +204,7 @@ dataHandle.csvOutput = function(data, chrDelimiter){
         return array.indexOf(element) === index;
       });
     }
-    
+
     return tempList;
   };
 
