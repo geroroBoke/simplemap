@@ -16,9 +16,7 @@ var GeoHandle ={
   nowRequest: "",   //検索中の住所
   onLocate: false,	  //アイテムが取得される度に呼ばれるcallback(geocoderResult)
   dummy:'',
-  urgentCount:0,  //急ぎのアイテムの数
   TIME_QUERYOVER: 300,
-  TIME_NOTURGENT: 1200,
   TEXT_FAILED:'geocoder failed'
 };
 
@@ -26,11 +24,15 @@ var GeoHandle ={
 GeoHandle.init = function (){
   GeoHandle.geocoder = new google.maps.Geocoder();
   GeoHandle.resetList();
+  GeoHandle.resetCache();
 }
 
 //  リストをリセットする
 GeoHandle.resetList = function(){
   GeoHandle.listAddress = [];
+}
+
+GeoHandle.resetCache = function(){
   GeoHandle.cacheResult = {};
 }
 
@@ -45,7 +47,6 @@ GeoHandle.addAddress = function(param, isUrgent){
       GeoHandle.listAddress = GeoHandle.listAddress.concat(param);
     }else {
       GeoHandle.listAddress = param.concat(GeoHandle.listAddress);
-      GeoHandle.urgentCount += param.length;
     }
 
   }else if (typeof param==='string'){
@@ -54,12 +55,17 @@ GeoHandle.addAddress = function(param, isUrgent){
       GeoHandle.listAddress.push(addParam);
     }else {
       GeoHandle.listAddress.unshift(addParam);
-      GeoHandle.urgentCount++;
     }
   // その他
   }else{
     return;
   }
+
+  // 重複をなくす
+  GeoHandle.listAddress =　GeoHandle.listAddress.filter(function(v, i, a){
+    return a.indexOf(v) === i;
+  });
+
 };
 
 //
@@ -81,10 +87,9 @@ GeoHandle.prepareNextRequest = function(){
     return false;
   }
   // キーを取得
-  if (GeoHandle.urgentCount > 0) GeoHandle.urgentCount--;
+  var key = GeoHandle.listAddress.shift();
 
   //	すでに検査済ならスキップ
-  var key = GeoHandle.listAddress.shift();
   if (GeoHandle.cacheResult[key]){
     return GeoHandle.prepareNextRequest();
   }

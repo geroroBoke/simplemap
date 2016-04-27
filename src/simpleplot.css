@@ -157,6 +157,21 @@ body, html{
   width: 10rem;
   height: 3rem;
 }
+#statusDiv{
+  position: absolute;
+  left: 0px;
+  right: 0px;
+  bottom: 8rem;
+  width: 100%;
+  max-width: 400px;
+  font-size: 1rem;
+  margin: 0 auto;
+  text-align: center;
+  background: #fff;
+  overflow: hidden;
+  opacity: .8;
+  display: none;
+}
 
 .marker{
   display: inline-block;

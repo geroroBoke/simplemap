@@ -86,8 +86,15 @@
 			// 現在のフォーカス値を選択状態にする
 			$('#switchSelect').val(getFocusedTantou());
 
-			// スパン変更時のアクションを実行
-			refleshTantouSpan();
+			// 優先的に住所を調べる
+			GeoHandle.addAddress(myData.getList(myPlotBy, true, myGroupBy, tantou), true);
+
+			// スライドの表示IDを管理・反映
+			manageSlide(0, 0);
+			// スライドDIVを再表示
+			$('#slideDiv').show();
+
+			refleshMarker();
 		}
 
 		// フォーカス状態のグループ名を取得する
@@ -210,9 +217,6 @@
 			var $selallSpan = createTantouSpan('すべて表示');
 			$selallSpan.click(event_SelallSpanClick);
 			$selallSpan.appendTo($tantouDiv);
-
-			// TantouSpanに変更があったとき
-			refleshTantouSpan();
 		}
 
 		// 表示非表示を切り替える
@@ -248,7 +252,7 @@
 			}
 
 			// TantouSpanに変更があったときのアクションを実行する
-			refleshTantouSpan();
+			refleshMarker();
 
 		}
 
@@ -259,27 +263,26 @@
 			$(this).toggleClass('marked');
 
 			// TantouSpanに変更があったときのアクションを実行する
-			refleshTantouSpan();
+			refleshMarker();
 		};
 
 		// TantouSpanに変更があったときのアクションを実行する
 		function refleshTantouSpan(){
 
-			// スライドDIVを消す
-			$('#slideDiv').hide();
-
-			// フォーカスされているスパンが存在すれば以下の
-			var focused = getFocusedTantou();
-			if (focused){
-
-				// 優先的に住所を調べる
-				GeoHandle.addAddress(myData.getList(myPlotBy, true, myGroupBy, focused), true);
-
-				// スライドの表示IDを管理・反映
-				manageSlide(0, 0);
-				// スライドDIVを再表示
-				$('#slideDiv').show();
-			}
+			// // スライドDIVを消す
+			// $('#slideDiv').hide();
+			//
+			// // フォーカスされているスパンが存在すれば以下の
+			// var focused = getFocusedTantou();
+			// if (focused){
+			// 	// 優先的に住所を調べる
+			// 	GeoHandle.addAddress(myData.getList(myPlotBy, true, myGroupBy, focused), true);
+			//
+			// 	// スライドの表示IDを管理・反映
+			// 	manageSlide(0, 0);
+			// 	// スライドDIVを再表示
+			// 	$('#slideDiv').show();
+			// }
 
 			// マーカーをリフレッシュする
 			refleshMarker();
@@ -578,12 +581,33 @@
 			GeoHandle.onLocate = myCallBack; //マーカーの再描画
 			GeoHandle.addAddress(myData.getList(myPlotBy, true));
 			GeoHandle.doNextSearch();
-
 		}
 
 		// アイテムが取得される度に呼ばれる(geocoderResult)
 		function myCallBack(request, result){
+			// マーカーを再描画
 			refleshMarker();
+
+			//
+			setStatusText(request + 'の検索が終了しました '
+				+ '（残り' + (GeoHandle.listAddress.length)  + '件）' , 2000);
+		}
+		// --------------------------------------------------------------------
+		//  statusDiv
+		// --------------------------------------------------------------------
+		function setStatusText(text, milliseconds){
+			// default = 2000 msec
+			if (!milliseconds) milliseconds = 2000;
+
+			var $statusDiv = $('#statusDiv');
+			var $statusText = $('#statusText');
+
+			$statusDiv.show();
+			$statusText.text(text);
+
+			setTimeout(function(){
+				$statusDiv.fadeOut();
+			}, milliseconds);
 		}
 
 		// --------------------------------------------------------------------
