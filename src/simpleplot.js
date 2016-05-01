@@ -43,7 +43,7 @@
 		    return val.replace(/[ !"#$%&'()*+,.\/:;<=>?@\[\\\]^`{|}~]/g, '\\$&');
 		}
 
-		// 配列のレコード重複をなくす  TODO 無理やりすぎる？
+		// 配列のレコード重複をなくす  TODO 無理やりすぎる
 		function getUniqueRecordArray(array) {
 			var storage = {};
 			return array.filter(function(value){
@@ -336,7 +336,7 @@
 		// InfoWindowを作成
 		function createInfoWindow(dataRow){
 			// 中身の作成
-			var content ='<div class="infoDiv">'; //TODO クラスがうまく反映されない
+			var content ='<div class="infoDiv">';
 			Object.keys(dataRow).forEach(function(k){
 				content += k + ':' + dataRow[k] + '<br>';
 			});
@@ -605,9 +605,20 @@
 			$statusDiv.show();
 			$statusText.text(text);
 
-			setTimeout(function(){
-				$statusDiv.fadeOut();
-			}, milliseconds);
+			var resolution = 500; // milli milliseconds
+			if (myStatusDuraionCount <= 0 ){
+				setTimeout(countDown, resolution);
+			}
+			myStatusDuraionCount = Math.floor(milliseconds / resolution);
+
+			function countDown(){
+				myStatusDuraionCount--;
+				if (myStatusDuraionCount <= 0){
+					$statusDiv.fadeOut();
+				}else{
+					setTimeout(countDown, resolution);
+				}
+			}
 		}
 
 		// --------------------------------------------------------------------
@@ -665,8 +676,6 @@
 		// --------------------------------------------------------------------
 		//  dialogDiv
 		// --------------------------------------------------------------------
-		//TODO 引数をオブジェクトでうける
-		//TODO セレクトボックス以外にも対応する（テキストボックスで名前を入力するなど）
 		function setDialogDiv(title, message, arrOptions, onOK, optionDefault){
 			// div要素の表示
 			$('#dialogDiv').show();
@@ -957,6 +966,9 @@
 
 		// myData ObjectArrayオブジェクト用の変数を宣言する importData内で初期化されます
 		var myData;
+
+		// statusTextを表示しつづける時間を格納
+		var myStatusDuraionCount = 0;
 
 		// オプション用の変数を用意 デフォルトを設定 importData内で再設定できます
 		var myTitle = getDefaultParseOption('title');

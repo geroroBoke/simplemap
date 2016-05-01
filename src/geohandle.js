@@ -10,7 +10,7 @@
 'use strict'
 var GeoHandle ={
   geocoder:{},
-  listAddress:[],   //連想配列オブジェクト　キーは登録時の住所文字列  プロパティも住所文字列
+  listAddress:[],   //配列 住所文字列
   cacheResult:{},   //連想配列オブジェクト　キーは登録時の住所文字列
                     //プロパティにはlatlng:{lat:0,lng:0}, address:""
   nowRequest: "",   //検索中の住所
