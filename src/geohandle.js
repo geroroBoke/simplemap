@@ -52,9 +52,9 @@ GeoHandle.addAddress = function(param, isUrgent){
   }else if (typeof param==='string'){
     //文字列の場合
     if(!isUrgent){
-      GeoHandle.listAddress.push(addParam);
+      GeoHandle.listAddress.push(param);
     }else {
-      GeoHandle.listAddress.unshift(addParam);
+      GeoHandle.listAddress.unshift(param);
     }
   // その他
   }else{
@@ -65,6 +65,9 @@ GeoHandle.addAddress = function(param, isUrgent){
   GeoHandle.listAddress =　GeoHandle.listAddress.filter(function(v, i, a){
     return a.indexOf(v) === i;
   });
+
+  // 検索を開始する
+  GeoHandle.doNextSearch();
 
 };
 
@@ -123,12 +126,11 @@ GeoHandle.onGetResult = function(request, result){
   // Resultをキャッシュに格納
   GeoHandle.cacheResult[request] = result;
 
-  // ユーザー指定のコールバックに飛ぶ
-  if (GeoHandle.onLocate)	GeoHandle.onLocate(request, result);
-
   // 次の検索を開始する
   GeoHandle.doNextSearch();
 
+  // ユーザー指定のコールバックに飛ぶ
+  if (GeoHandle.onLocate)	GeoHandle.onLocate(request, result);
 }
 
 //geocode callback

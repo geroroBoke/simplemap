@@ -579,8 +579,7 @@
 
 			// GeoHandleオブジェクトの操作
 			GeoHandle.onLocate = myCallBack; //マーカーの再描画
-			GeoHandle.addAddress(myData.getList(myPlotBy, true));
-			GeoHandle.doNextSearch();
+			GeoHandle.addAddress(myData.getList(myPlotBy, true));//住所を重複なしのリストにして追加する
 		}
 
 		// アイテムが取得される度に呼ばれる(geocoderResult)
@@ -589,8 +588,10 @@
 			refleshMarker();
 
 			//
-			setStatusText(request + 'の検索が終了しました '
-				+ '（残り' + (GeoHandle.listAddress.length)  + '件）' , 2000);
+			var buffer = '';
+			buffer += request + 'を検索 ';
+			if (GeoHandle.listAddress.length) '（残り' + (GeoHandle.listAddress.length)  + '件）';
+			setStatusText(buffer, 2000);
 		}
 		// --------------------------------------------------------------------
 		//  statusDiv
@@ -965,7 +966,7 @@
 		setSlideDivEvents();
 
 		// myData ObjectArrayオブジェクト用の変数を宣言する importData内で初期化されます
-		var myData;
+		var myData = null;
 
 		// statusTextを表示しつづける時間を格納
 		var myStatusDuraionCount = 0;
