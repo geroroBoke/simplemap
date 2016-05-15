@@ -206,6 +206,11 @@
 			// 中の要素を削除する
 			$tantouDiv.empty();
 
+			// すべて表示のtantouSpan作成する
+			var $selallSpan = createTantouSpan('すべて表示');
+			$selallSpan.click(event_SelallSpanClick);
+			$selallSpan.appendTo($tantouDiv);
+
 			// 各担当者のtantouSpanを作成する
 			myData.getList(myGroupBy, true).forEach(function(element){
 				var $tantouSpan = createTantouSpan(element);
@@ -213,10 +218,7 @@
 				$tantouSpan.appendTo($tantouDiv);
 			});
 
-			// すべて表示のtantouSpan作成する
-			var $selallSpan = createTantouSpan('すべて表示');
-			$selallSpan.click(event_SelallSpanClick);
-			$selallSpan.appendTo($tantouDiv);
+
 		}
 
 		// 表示非表示を切り替える
@@ -226,6 +228,7 @@
 
 		// 担当者の名前一覧のspanをつくる
 		function createTantouSpan(tantouName){
+
 			// コンテイナーに要素をいれていく
 			var $container = $('<div>').attr({'id': tantouName, 'class': 'tantouSpan marked'});
 			//
@@ -296,8 +299,13 @@
 
 			// richMarkerのプロパティ
 			var latlng = result.latlng;
-			var labelText = dataRow[myGroupBy].match(/[^\d:;#]/) + dataRow[mySortBy]; // 吹き出しの中身 	// 数字や記号以外で最初の一文字を取得する
-			var colorText = getTantouCssColorText(dataRow[myGroupBy]);// 吹き出しの色を取得
+			// 吹き出しの中身
+			var labelText = "";
+			labelText += dataRow[myGroupBy].match(/[^\d:;#]/);// 数字や記号以外で最初の一文字を取得する
+			labelText += dataRow[mySortBy].match(/[\d]+/); // 連続した数字を取得する
+			// 吹き出しの色を取得
+			var colorText = getTantouCssColorText(dataRow[myGroupBy]);
+
 			var commentText = result.address; // 横のコメントの内容
 
 			// richmarkerのcontentの作成
@@ -367,11 +375,14 @@
 
 				// 要マーカー作成
 				if ( isMarked || isFocused){
-					// マーカー作成ああ
+					// マーカー作成
 					if (!myMarkerArr[id]){
 						//ジオコーダ取得。
 						var result = GeoHandle.cacheResult[dataRow[myPlotBy]];
-						if (!result || result.address == GeoHandle.TEXT_FAILED) return;			//検索履歴なしもしくは取得失敗なら終了
+
+						//検索履歴なしもしくは取得失敗なら終了
+						if (!result || result.address == GeoHandle.TEXT_FAILED) return;
+
 						// マーカー作成
 						myMarkerArr[id] = createMarker(id, result, dataRow, isFocused);
 					}
@@ -590,8 +601,9 @@
 			//
 			var buffer = '';
 			buffer += request + 'を検索 ';
-			if (GeoHandle.listAddress.length) '（残り' + (GeoHandle.listAddress.length)  + '件）';
+			if (GeoHandle.listAddress.length) buffer += '（残り' + (GeoHandle.listAddress.length)  + '件）';
 			setStatusText(buffer, 2000);
+
 		}
 		// --------------------------------------------------------------------
 		//  statusDiv
@@ -695,7 +707,16 @@
 				);
 			}
 
+			//セレクトボックスをデフォルト値にセット
 			$('#dialogSelect').val(optionDefault);
+
+			//セレクトボックスにデフォルト値に合致するものが無ければ一番上を選択状態にする
+			if (!$('#dialogSelect').val()){
+				$('')//TODO TODO TODO TODO TODO
+				$('#dialogSelect').val(0);
+			}
+
+
 
 			// OKボタンを押したときのイベント
 			$('#dialogOKBtn')[0].onclick = function(){
@@ -993,6 +1014,6 @@
 		}
 
 		// geocoderキャッシュ管理オブジェクトを初期化
-		GeoHandle.init();
+		GeoHandle.init(true);
 
 	})();

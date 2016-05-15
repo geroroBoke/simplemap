@@ -1,5 +1,3 @@
-//  TODO
-
 //////////////////////////////////////////////////////////////////////
 // geoHandle.js
 //          require ttp://maps.google.com/maps/api/js?language=ja
@@ -11,20 +9,22 @@
 var GeoHandle ={
   geocoder:{},
   listAddress:[],   //配列 住所文字列
-  cacheResult:{},   //連想配列オブジェクト　キーは登録時の住所文字列
+  cacheResult:{},   //連想配列オブジェクト キーは登録時の住所文字列
                     //プロパティにはlatlng:{lat:0,lng:0}, address:""
-  nowRequest: "",   //検索中の住所
+  nowRequest: "",   //検索中の住所	検索が終わると空になる
   onLocate: false,	  //アイテムが取得される度に呼ばれるcallback(geocoderResult)
   dummy:'',
   TIME_QUERYOVER: 300,
-  TEXT_FAILED:'geocoder failed'
+  TEXT_FAILED:'geocoder failed',
+  useStorage: false //webstorageを使用するか
 };
 
 //	初期化する
-GeoHandle.init = function (){
+GeoHandle.init = function (isStorage){
   GeoHandle.geocoder = new google.maps.Geocoder();
   GeoHandle.resetList();
   GeoHandle.resetCache();
+  GeoHandle.useStorage = isStorage;
 }
 
 //  リストをリセットする
@@ -62,17 +62,20 @@ GeoHandle.addAddress = function(param, isUrgent){
   }
 
   // 重複をなくす
-  GeoHandle.listAddress =　GeoHandle.listAddress.filter(function(v, i, a){
+  GeoHandle.listAddress = GeoHandle.listAddress.filter(function(v, i, a){
     return a.indexOf(v) === i;
   });
 
-  // 検索を開始する
-  GeoHandle.doNextSearch();
+  // 検索中でなければ検索を開始する
+  if (GeoHandle.nowRequest == "") {
+    GeoHandle.doNextSearch();
+  }
 
 };
 
 //
 GeoHandle.doNextSearch = function (){
+
   // 次検索アイテムをセットする
   if (!GeoHandle.prepareNextRequest()){
     //	falseなら終端。終了。
@@ -104,27 +107,31 @@ GeoHandle.prepareNextRequest = function(){
 
 // サーチを開始する
 GeoHandle.doSearch = function (){
-  // 現在調べ中の住所を取得する
-  var request = GeoHandle.nowRequest;
 
   // locaclStorageから該当を探す
-  var result = GeoHandle.getLocalStorage(request);
+  var result;
+  if (GeoHandle.useStorage) result = GeoHandle.getLocalStorage(GeoHandle.nowRequest);
+
   if (result ){
     // 結果の取得に成功した時アクション
-    GeoHandle.onGetResult(request, result);
+    GeoHandle.onGetResult(GeoHandle.nowRequest, result);
+
   }else {
-    // localStorageに該当がない場合　googlemapのgeocoderを実行する
-    GeoHandle.geocoder.geocode({address: request}, GeoHandle.searchAddress);
+    // localStorageに該当がない場合 googlemapのgeocoderを実行する
+    GeoHandle.geocoder.geocode({address: GeoHandle.nowRequest}, GeoHandle.searchAddress);
   }
 }
-// ジオコード結果の取得に成功した時のアクションを実行する
+//住所検索結果の取得に成功した時のアクション
 GeoHandle.onGetResult = function(request, result){
 
   // localStorageに格納
-  GeoHandle.setLocalStorage(request, result);
+  if (GeoHandle.useStorage) GeoHandle.setLocalStorage(request, result);
 
   // Resultをキャッシュに格納
   GeoHandle.cacheResult[request] = result;
+
+  // 検索中の文字列を空にする
+  GeoHandle.nowRequest = "";
 
   // 次の検索を開始する
   GeoHandle.doNextSearch();
@@ -133,25 +140,25 @@ GeoHandle.onGetResult = function(request, result){
   if (GeoHandle.onLocate)	GeoHandle.onLocate(request, result);
 }
 
-//geocode callback
+//geocoderのcallback
 GeoHandle.searchAddress = function (results, status){
-  // 処理中の住所取得
-  var request = GeoHandle.nowRequest;
 
   // GeocoderステータスがOKならResult{address, latlng}を取得する
   var saveResult = GeoHandle.getResultIfStatusOK(results, status);
+
   if (!saveResult ){
-    //クエリーオ-バー時は再度やり直す
-    setTimeout(GeoHandle.doSearch,GeoHandle.TIME_QUERYOVER);
+    //失敗時はクエリオーバーとして再度試す
+    setTimeout(GeoHandle.doSearch, GeoHandle.TIME_QUERYOVER);
     return;
   }
   // ジオコード結果の取得に成功した時のアクションを実行する
-  GeoHandle.onGetResult(request, saveResult);
+  GeoHandle.onGetResult(GeoHandle.nowRequest, saveResult);
 
 }
 
 //
 GeoHandle.getLocalStorage = function(key){
+
   // ブラウザがサポートしていなければ終了
   if (!localStorage || !JSON ){return;}
   // ストレージから情報を取得
@@ -187,7 +194,7 @@ GeoHandle.getResultIfStatusOK =function(results, status){
 
     case google.maps.GeocoderStatus.OVER_QUERY_LIMIT:
     //  クエリーを出しすぎて怒られた場合
-      return false;　        // falseでリターンする
+      return false;         // falseでリターンする
 
     default:
     // その他エラーの場合 // TODO エラー処理を書く
@@ -218,7 +225,7 @@ GeoHandle.getGcrAddressText = function(gcResult){
     if (stradr.length > 0 &&
       cmpnt.types[0].match(/sublocality_level_[2-9]/)==null) break;
   }
-  if (stradr　== '１'){
+  if (stradr == '１'){
     console.log("a");
   }
   return stradr;
