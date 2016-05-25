@@ -22,17 +22,17 @@ var GeoHandle ={
 //	初期化する
 GeoHandle.init = function (isStorage){
   GeoHandle.geocoder = new google.maps.Geocoder();
-  GeoHandle.resetList();
-  GeoHandle.resetCache();
+  GeoHandle.clearList();
+  GeoHandle.clearCache();
   GeoHandle.useStorage = isStorage;
 }
 
 //  リストをリセットする
-GeoHandle.resetList = function(){
+GeoHandle.clearList = function(){
   GeoHandle.listAddress = [];
 }
 
-GeoHandle.resetCache = function(){
+GeoHandle.clearCache = function(){
   GeoHandle.cacheResult = {};
 }
 

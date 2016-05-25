@@ -76,15 +76,17 @@
 		// 指定した担当スパンをフォーカス状態にする
 		function setFocusedTantou(tantou){
 
-			// セレクタに使う記号をエスケープする
-			tantou = selectorEscape(tantou);
+			// セレクタに使うためにエスケープした物を用意
+			var esc_tantou= selectorEscape(tantou);
 
 			// 他の担当スパンのフォーカスを消す
-			$('#' + tantou).siblings().removeClass('focused');
-			$('#' + tantou).addClass('focused');
+			$('#' + esc_tantou).siblings().removeClass('focused');
+			// 自身の担当スパンをフォーカス状態にする
+			$('#' + esc_tantou).addClass('focused');
 
-			// 現在のフォーカス値を選択状態にする
-			$('#switchSelect').val(getFocusedTantou());
+			// セレクトボックス中で選択状態にする
+			// $('#switchSelect').val(getFocusedTantou());
+			$('#switchSelect').val(tantou);
 
 			// 優先的に住所を調べる
 			GeoHandle.addAddress(myData.getList(myPlotBy, true, myGroupBy, tantou), true);
@@ -663,8 +665,11 @@
 			});
 
 			// キャッシュを削除ボタン
-			$('#dataBtnClearStorage').click(function(){
+			$('#dataBtnClearCache').click(function(){
+				// ローカルストレージを削除
 				GeoHandle.clearLocalStorage();
+				// GeoHandleのキャッシュも削除
+				GeoHandle.clearCache();
 			});
 
 			// 左上の×ボタン
