@@ -180,6 +180,13 @@ GeoHandle.setLocalStorage = function(key, saveResult){
   localStorage.setItem(key, JSON.stringify(saveResult));
 }
 
+GeoHandle.clearLocalStorage = function(){
+  // ブラウザがサポートしていなければ終了
+  if (!localStorage ){return;}
+  // ストレージを全て消す
+  localStorage.clear();
+}
+
 
 
 // TODO この関数いる？searchAddress内に入れた方がいい？

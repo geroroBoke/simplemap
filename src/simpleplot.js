@@ -662,6 +662,11 @@
 				);
 			});
 
+			// キャッシュを削除ボタン
+			$('#dataBtnClearStorage').click(function(){
+				GeoHandle.clearLocalStorage();
+			});
+
 			// 左上の×ボタン
 			$('#dataClose').click(toggleDataDiv)
 		}
