@@ -232,12 +232,21 @@
 		function createTantouSpan(tantouName){
 
 			// コンテイナーに要素をいれていく
-			var $container = $('<div>').attr({'id': tantouName, 'class': 'tantouSpan marked'});
+			var $container = $('<div>').attr(
+				{'id': tantouName,
+				'class': 'tantouSpan marked'}
+			);
+
 			//
-			var $span = $('<span>')
-				.attr({'class': 'tantouItem'})
-				.append($('<span>').css('background-color', getTantouCssColorText(tantouName)).text('__'))
-				.append(tantouName);
+			var $span = $('<span>').attr({'class': 'tantouItem'})
+				.append($('<span>').attr({'class' : 'tantouItemHead'})
+					.append($('<span>') // 担当者ごとの色の四角
+						.css('background-color',getTantouCssColorText(tantouName))
+						.text('__')
+				))
+				.append($('<span>').attr({'class' : 'tantouItemBody'})
+					.append(tantouName)
+				);
 
 			$container.append($span);
 			return $container;

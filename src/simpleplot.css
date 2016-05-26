@@ -172,6 +172,40 @@ body, html{
   opacity: .8;
   display: none;
 }
+#tantouDiv{
+  display:none;
+  position:fixed;
+  top:4rem;
+  right:3rem;
+  width:140px;
+  max-height: 80%;
+  line-height: 28px;
+  overflow-x: hidden;
+  overflow-y: scroll;
+}
+.tantouSpan{
+}
+
+.tantouItem{
+  margin: 8px auto;
+  display:block;
+  border: 1px solid;
+  border-radius: 12px;
+  box-shadow:  1px 1px 3px 0 rgba(0,0,0,0.5);
+  text-align: center;
+  line-height: 24px;
+  height: 24px;
+  cursor: pointer;
+  background-color: #fff;
+}
+
+.marked .tantouItem{
+  background-color: #edf;
+}
+
+.focused .tantouItemHead:before{
+  content : "⇒";
+}
 
 .marker{
   display: inline-block;
@@ -231,32 +265,6 @@ body, html{
   line-height: 20px;
   width: 140px;
   overflow: hidden;
-}
-#tantouDiv{
-  display:none;
-}
-.tantouSpan{
-}
-
-.tantouItem{
-  margin: 8px auto;
-  display:block;
-  border: 1px solid;
-  border-radius: 12px;
-  box-shadow:  1px 1px 3px 0 rgba(0,0,0,0.5);
-  text-align: center;
-  line-height: 24px;
-  height: 24px;
-  cursor: pointer;
-  background-color: #fff;
-}
-
-.marked .tantouItem{
-  background-color: #edf;
-}
-
-.focused .tantouItem{
-  background-color: #ffa;
 }
 
 .clickable{
