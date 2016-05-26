@@ -302,9 +302,12 @@
 			// richMarkerのプロパティ
 			var latlng = result.latlng;
 			// 吹き出しの中身
+			var labelInitial = dataRow[myGroupBy].match(/[^\d:;#]/);// 数字や記号以外で最初の一文字を取得する
+			var labelNumber = dataRow[mySortBy].match(/[\d]+/); // 連続した数字を取得する
 			var labelText = "";
-			labelText += dataRow[myGroupBy].match(/[^\d:;#]/);// 数字や記号以外で最初の一文字を取得する
-			labelText += dataRow[mySortBy].match(/[\d]+/); // 連続した数字を取得する
+			if ( labelInitial ) labelText += labelInitial;
+			if ( labelNumber ) labelText += labelNumber;
+
 			// 吹き出しの色を取得
 			var colorText = getTantouCssColorText(dataRow[myGroupBy]);
 
