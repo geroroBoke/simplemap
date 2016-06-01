@@ -734,11 +734,8 @@
 
 			//セレクトボックスにデフォルト値に合致するものが無ければ一番上を選択状態にする
 			if (!$('#dialogSelect').val()){
-				$('')//TODO TODO TODO TODO TODO
-				$('#dialogSelect').val(0);
+				$('#dialogSelect').val(arrOptions[0]);
 			}
-
-
 
 			// OKボタンを押したときのイベント
 			$('#dialogOKBtn')[0].onclick = function(){
@@ -747,6 +744,11 @@
 				// セレクトオプションを戻り値にしてcallbackに返す
 				if (onOK) onOK( $('#dialogSelect').val() );
 			};
+
+			// Cancelボタんを押されたら閉じる
+			$('#dialogClose')[0].onclick = function(){
+				$('#dialogDiv').hide();
+			}
 
 		}
 

@@ -157,6 +157,13 @@ body, html{
   width: 10rem;
   height: 3rem;
 }
+#dialogClose{
+  width: 1.8rem;
+  margin-top: 0px;
+  margin-left: auto;
+  font-size: 1.8rem;
+  line-height: 1.8rem;
+}
 #statusDiv{
   position: absolute;
   left: 0px;
