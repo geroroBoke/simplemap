@@ -47,11 +47,6 @@ body, html{
   display:none;
 }
 #dataClose{
-  width: 1.8rem;
-  margin-top: 0px;
-  margin-left: auto;
-  font-size: 1.8rem;
-  line-height: 1.8rem;
 }
 #dataText{
   width: calc(100% - 3em);
@@ -132,9 +127,26 @@ body, html{
   font-size: 1.2rem;
   min-width: 10rem;
 }
+#shareDiv{
+  position: fixed;
+  padding: 20px 10px 60px;
+  top: 1rem;
+  left: 140px;
+  width: calc(100% - 200px);
+  /*height: 200px;*/
+  text-align: center;
+  line-height:3rem;
+  background: #ccc;
+  border-radius: 15px;
+  display: none;
+}
+#shareSelect{
+  width: 200px;
+}
+
 #dialogDiv{
   position: fixed;
-  padding: 50px 10px;
+  padding: 20px 10px 60px;
   top: 1rem;
   left: 140px;
   width: calc(100% - 200px);
@@ -151,18 +163,13 @@ body, html{
 #dialogDiv div{
 }
 #dialogSelect{
-  font-size: 1.5rem;
+  font-size: 2.5rem;
 }
 #dialogOKBtn{
   width: 10rem;
   height: 3rem;
 }
 #dialogClose{
-  width: 1.8rem;
-  margin-top: 0px;
-  margin-left: auto;
-  font-size: 1.8rem;
-  line-height: 1.8rem;
 }
 #statusDiv{
   position: absolute;
@@ -282,6 +289,14 @@ body, html{
   color:blue;
   font-weight:bold;
   opacity: .5;
+}
+
+.closeButton{
+  width: 1.8rem;
+  margin-top: 0px;
+  margin-left: auto;
+  font-size: 1.8rem;
+  line-height: 1.8rem;
 }
 
 .infoDiv{

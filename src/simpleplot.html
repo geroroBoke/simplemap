@@ -33,6 +33,7 @@
 			<p><button id="toggleDataBtn" >データ取込</button></p>
 			<p><button id="toggleSearchBtn" >場所を検索</button></p>
 			<p><button id="toggleTantouBtn" >表示担当一覧</button></p>
+			<p><button id="toggleShareBtn" >データ共有</button></p>
 		</div>
 	</div>
 
@@ -68,23 +69,31 @@
 
 	<!-- データ取込フォーム -->
 	<div id="dataDiv">
-		<div id="dataClose" class="clickable">×</div>
+		<div id="dataClose" class="clickable closeButton">×</div>
 		<span id="dataTitle">住所データを「タブ区切りのレコード」で入力</span>
 		<p><textarea id="dataText"></textarea></p>
 		<button id="dataBtnImport" >プロット開始</button>
-		<input type="checkbox" id="dataChkUnique" checked="true">
-			<label for="dataChkUnique">重複行を削除</label>
-		<input type="checkbox" id="dataChkTrim" checked="true">
-			<label for="dataChkTrim">ゴミ文字を削除</label>
-		<input type="checkbox" id="dataChkMansion" checked="true">
-			<label for="dataChkMansion">マンション名を削除</label>
+		<input id="dataChkUnique" type="checkbox" checked="true"><label for="dataChkUnique">重複行を削除</label>
+		<input id="dataChkTrim" type="checkbox" checked="true"><label for="dataChkTrim">ゴミ文字を削除</label>
+		<input id="dataChkMansion" type="checkbox" checked="true"><label for="dataChkMansion">マンション名を削除</label>
 		<button id="dataBtnReset" >再構成</button>
 		<button id="dataBtnClearCache">キャッシュを削除</button>
 	</div>
 
+	<!-- データ共有フォーム -->
+	<div id="shareDiv">
+		<div id="shareClose" class="clickable closeButton">×</div>
+		<div id="shareTitle">データの共有</div>
+		<div id="shareMessage">共有するグループを選択してください（複数選択可能）</div>
+		<p><select id="shareSelect" multiple size="5"></select></p>
+		<p><input id="shareChkTrim" type="checkbox" checked="true"><label for="shareChkTrim">最低限のデータのみ共有</label></p>
+		<button id="shareOKBtn">OK</button>
+	</div>
+
+
 	<!-- 汎用ダイアログボックス -->
 	<div id="dialogDiv">
-		<span id="dialogClose" class="clickable">x</span>
+		<div id="dialogClose" class="clickable closeButton">x</div>
 		<div id="dialogTitle">ダイアログのタイトル</div>
 		<div id="dialogMessage">ダイアログのメッセージ本文</div>
 		<div><select id="dialogSelect"></select></div>

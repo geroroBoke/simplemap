@@ -471,7 +471,7 @@
 			if (retriveParseOption(dataText, 'groupby')) myGroupBy = retriveParseOption(dataText, 'groupby');
 			if (retriveParseOption(dataText, 'sortby')) mySortBy = retriveParseOption(dataText, 'sortby');
 			if (retriveParseOption(dataText, 'plotby')) myPlotBy = retriveParseOption(dataText, 'plotby');
-			dataText = trimParseOptions(dataText);// 最後に#制御文を取り除く
+			dataText = trimParseOptions(dataText);// ソースからパース設定に関する行を取り除く
 
 			// テキストをパースする
 			var data = dataHandle.csvParse(dataText, '\t', true);
@@ -708,6 +708,40 @@
 				}, 1);
 			}
 		}
+		// --------------------------------------------------------------------
+		//  shareDiv
+		// --------------------------------------------------------------------
+		function toggleShareDiv(){
+			// データが無ければ終了
+			if (!myData){
+				$('#shareDiv').hide();
+				return;
+			}
+
+			// 表示・非表示を切り替える
+			$('#shareDiv').toggle();
+
+			// 表示ONなら
+			if($('#shareDiv').is(':visible')){
+
+				// 閉じるボタンイベント
+				$('#shareClose').click(function(){
+					$('#shareDiv').hide();
+				});
+
+				// OKイベント
+				$('#shareOKBtn').click(function(){
+
+				});
+
+				// グループ一覧をセレクトボックスに格納
+				myData.getList(myGroupBy, true).forEach(function(e){
+					$('#shareSelect').append($('<option>').val(e).text(e));
+				});
+
+			}
+		}
+
 		// --------------------------------------------------------------------
 		//  dialogDiv
 		// --------------------------------------------------------------------
@@ -1000,6 +1034,8 @@
 		$('#toggleDataBtn').click(toggleDataDiv);
 		$('#toggleSearchBtn').click(toggleSearchDiv);
 		$('#toggleTantouBtn').click(toggleTantouDiv);
+		$('#toggleShareBtn').click(toggleShareDiv);
+
 
 		// 取り込みボタンのイベントを設定する
 		setDataDivEvents();
