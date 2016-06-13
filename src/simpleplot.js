@@ -457,6 +457,19 @@
 			});
 			return newText;
 		}
+
+		// myDataをURIエンコードされた文字列として返す
+		// TODO arrFilters プロパティで絞り込む
+		function exportData(){
+			var csvtext = dataHandle.csvOutput(myData.data, '\t');
+			if (!csvtext) {
+				// error
+				return;
+			}
+			return encodeURI(csvtext);
+		}
+
+
 		// --------------------------------------------------------------------
 		//  importData
 		// --------------------------------------------------------------------
@@ -489,7 +502,6 @@
 					});
 					return;
 			}
-
 
 			// フィールド名と等しい値がある行は削除する
 			data.data = data.data.filter(function(row){
@@ -731,7 +743,10 @@
 
 				// OKイベント
 				$('#shareOKBtn').click(function(){
-
+					var uriText = exportData();
+					if (uriText){
+						$('#shareURIField').val(uriText);
+					}
 				});
 
 				// グループ一覧をセレクトボックスに格納
@@ -1067,13 +1082,12 @@
 		// googleマップの読込み
 		var myMap = new google.maps.Map($('#map')[0], getMyMapOption());
 
+		// geocoderキャッシュ管理オブジェクトを初期化
+		GeoHandle.init(true);
+
 		// URIに#以降があればそのパラメータでimportDataを行う
 		if (location.hash.length >= 0){
 			importData(decodeURI(location.hash.substring(1)),
 			true, true ,true);// default true true
 		}
-
-		// geocoderキャッシュ管理オブジェクトを初期化
-		GeoHandle.init(true);
-
 	})();
