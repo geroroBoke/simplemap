@@ -209,6 +209,7 @@ function toggleShareDiv(){
 		});
 
 		// グループ一覧をセレクトボックスに格納
+		$('#shareSelect').empty();
 		myData.getList(myGroupBy, true).forEach(function(e){
 			$('#shareSelect').append($('<option>').val(e).text(e));
 		});
