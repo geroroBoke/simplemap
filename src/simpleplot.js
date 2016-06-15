@@ -219,12 +219,17 @@ function trimParseOptions(srcText){
 
 // myDataをURIエンコードされた文字列として返す
 // TODO arrFilters プロパティで絞り込む
-function exportData(){
-	var csvtext = myData.csvOutput('\t');
-	if (!csvtext) {
-		// error
-		return;
-	}
+function exportData(arrFilters){
+
+	var workData = myData;
+
+	//フィルタに指定があればデータを絞り込む
+	if(arrFilters) workData = myData.filterRow(myGroupBy, arrFilters);
+	if (!workData) return;
+
+	var csvtext = workData.csvOutput('\t');
+	if (!csvtext) return;
+
 	return encodeURI(csvtext);
 }
 

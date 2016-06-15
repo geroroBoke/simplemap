@@ -202,7 +202,9 @@ function toggleShareDiv(){
 
 		// OKイベント
 		$('#shareOKBtn').click(function(){
-			var uriText = exportData();
+			var selected = $('#shareSelect').val();
+
+			var uriText = exportData(selected);
 			if (uriText){
 				$('#shareURIField').val(uriText);
 			}
