@@ -220,7 +220,7 @@ function trimParseOptions(srcText){
 // myDataをURIエンコードされた文字列として返す
 // TODO arrFilters プロパティで絞り込む
 function exportData(){
-	var csvtext = dataHandle.csvOutput(myData.data, '\t');
+	var csvtext = myData.csvOutput('\t');
 	if (!csvtext) {
 		// error
 		return;
@@ -246,7 +246,7 @@ function importData(dataText, isUniqueRecord, isTrimGarbage, isTrimMansion, isRe
 	dataText = trimParseOptions(dataText);// ソースからパース設定に関する行を取り除く
 
 	// テキストをパースする
-	var data = dataHandle.csvParse(dataText, '\t', true);
+	var data = dataHandle.ObjectArray.csvParse(dataText, '\t');
 
 	// パースできていなければ終了
 	if (!data) return;

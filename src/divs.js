@@ -173,7 +173,7 @@ function toggleDataDiv(){
 	if ( $dataDiv.is(':visible') ){
 		setTimeout(function(){
 			// 現在のデータをCSVにして再表示
-			if (myData) $dataText.val(dataHandle.csvOutput(myData.data, '\t') );
+			if (myData) $dataText.val(myData.csvOutput('\t'));
 			$dataText.focus();
 			// $dataText.append('');
 		}, 1);
