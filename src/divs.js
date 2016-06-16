@@ -202,12 +202,13 @@ function toggleShareDiv(){
 
 		// OKイベント
 		$('#shareOKBtn').click(function(){
+
+			// セレクトボックスで選択されている一覧
 			var selected = $('#shareSelect').val();
 
+			// uriに変換する
 			var uriText = exportData(selected);
-			if (uriText){
-				$('#shareURIField').val(uriText);
-			}
+			if (uriText)$('#shareURIField').val(uriText);
 		});
 
 		// グループ一覧をセレクトボックスに格納

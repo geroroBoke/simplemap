@@ -218,7 +218,6 @@ function trimParseOptions(srcText){
 }
 
 // myDataをURIエンコードされた文字列として返す
-// TODO arrFilters プロパティで絞り込む
 function exportData(arrFilters){
 
 	var workData = myData;
