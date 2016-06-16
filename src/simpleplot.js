@@ -217,18 +217,27 @@ function trimParseOptions(srcText){
 	return newText;
 }
 
-// myDataをURIエンコードされた文字列として返す
-function exportData(arrFilters){
+// // myDataをURIエンコードされた文字列として返す
+// function exportData(arrFilters){
+//
+// 	var workData = myData;
+//
+// 	//フィルタに指定があればデータを絞り込む
+// 	if(arrFilters) workData = myData.filterRow(myGroupBy, arrFilters);
+// 	if (!workData) return;
+//
+// 	var csvtext = workData.csvOutput('\t');
+// 	if (!csvtext) return;
+//
+// 	return encodeURI(csvtext);
+// }
 
-	var workData = myData;
+// 指定されたObjectArrayをURIエンコードされた文字列として返す
+function exportData(data){
+	if (!data) return;
 
-	//フィルタに指定があればデータを絞り込む
-	if(arrFilters) workData = myData.filterRow(myGroupBy, arrFilters);
-	if (!workData) return;
-
-	var csvtext = workData.csvOutput('\t');
+	var csvtext = data.csvOutput('\t');
 	if (!csvtext) return;
-
 	return encodeURI(csvtext);
 }
 

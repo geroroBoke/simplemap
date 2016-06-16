@@ -205,10 +205,23 @@ function toggleShareDiv(){
 
 			// セレクトボックスで選択されている一覧
 			var selected = $('#shareSelect').val();
+			if (!selected) return
+
+			// 出力用のデータを作成する
+			var data = myData.filterRow(myGroupBy, null); // 一旦コピーする
+			data = data.filterRow(myGroupBy, selected); // 行
+			if ($('#shareChkTrim').val()){
+				data = data.filterColumn([myGroupBy, myPlotBy, mySortBy]); // 列
+			}
+			if (!data) return;
 
 			// uriに変換する
-			var uriText = exportData(selected);
-			if (uriText)$('#shareURIField').val(uriText);
+			var uriText = exportData(data);
+			if (!uriText) return;
+
+			// 表示フィールドに出力する
+			var myURI = location.href.replace(location.hash, "");
+			$('#shareURIField').val(myURI + '#' + uriText);
 		});
 
 		// グループ一覧をセレクトボックスに格納
