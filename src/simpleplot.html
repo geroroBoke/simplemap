@@ -26,19 +26,34 @@
 		</div>
 	</div>
 
-	<!-- sideDiv -->
-	<div id="sideDiv">
+	<!-- leftSideDiv -->
+	<div id="leftSideDiv">
+
+		<p><button id="toggleMenuBtn"><img class="buttonIcon" src="../img/menu-button.png"></button></p>
+
+		<!-- menuDiv -->
 		<div id="menuDiv">
-			<p><button id="toggleDataBtn" >データ取込</button></p>
-			<p><button id="toggleSearchBtn" >場所を検索</button></p>
-			<p><button id="toggleTantouBtn" >表示担当一覧</button></p>
-			<p><button id="toggleShareBtn" >データ共有</button></p>
+			<div class="clickable" id="toggleDataBtn" >データ取込</div>
+			<div class="clickable" id="toggleSearchBtn" >場所を検索</div>
+			<div class="clickable" id="toggleShareBtn" >データ共有</div>
+			<div class="clickable" id="toggleAboutBtn" >このサイトについて</div>
 		</div>
 	</div>
 
-	<!-- 表示非表示切替Div-->
-	<div id="tantouDiv">
+	<!-- rightSideDiv -->
+	<div id="rightSideDiv">
+		<!-- 担当フォーカス切替　セレクトボックス -->
+		<div id="switchDiv">
+			<select id="switchSelect"></select>
+			<button id="toggleTantouBtn"><img class="buttonIcon" src="../img/browser-visualization.png"></button>
+		</div>
+
+		<!-- 表示非表示切替Div-->
+		<div id="tantouDiv">
+		</div>
+
 	</div>
+
 
 	<!-- サーチボックス -->
 	<div id="searchDiv">
@@ -61,13 +76,8 @@
 		</div>
 	</div>
 
-	<!-- 担当フォーカス切替　セレクトボックス -->
-	<div id="switchDiv">
-		<select id="switchSelect"></select>
-	</div>
-
-	<!-- データ取込フォーム -->
-	<div id="dataDiv">
+	<!-- データ取込ダイアログ -->
+	<div id="dataDiv" class="dialog">
 		<div id="dataClose" class="clickable closeButton">×</div>
 		<span id="dataTitle">住所データを「タブ区切りのレコード」で入力</span>
 		<p><textarea id="dataText"></textarea></p>
@@ -79,8 +89,8 @@
 		<button id="dataBtnClearCache">キャッシュを削除</button>
 	</div>
 
-	<!-- データ共有フォーム -->
-	<div id="shareDiv">
+	<!-- データ共有ダイアログ -->
+	<div id="shareDiv" class="dialog">
 		<div id="shareClose" class="clickable closeButton">×</div>
 		<div id="shareTitle">データの共有</div>
 		<div id="shareMessage">共有するグループを選択してください（複数選択可能）</div>
@@ -90,8 +100,15 @@
 		<p><textarea id="shareURIField" rows="8" cols="80"></textarea></p>
 	</div>
 
-	<!-- 汎用ダイアログボックス -->
-	<div id="dialogDiv">
+	<!-- このサイトについてダイアログ -->
+	<div id="aboutDiv" class="dialog">
+		<div id="shareClose" class="clickable closeButton">×</div>
+		<div>simple map plotter</div>
+		<div>made by geroro</div>
+	</div>
+
+	<!-- 汎用ダイアログ -->
+	<div id="dialogDiv" class="dialog">
 		<div id="dialogClose" class="clickable closeButton">x</div>
 		<div id="dialogTitle">ダイアログのタイトル</div>
 		<div id="dialogMessage">ダイアログのメッセージ本文</div>

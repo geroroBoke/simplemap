@@ -18,10 +18,13 @@ $(function(){
 // --------------------------------------------------------------------
 function main(){
 	// トグルスイッチ
+
+	$('#toggleMenuBtn').click(toggleMenuDiv);
 	$('#toggleDataBtn').click(toggleDataDiv);
 	$('#toggleSearchBtn').click(toggleSearchDiv);
 	$('#toggleTantouBtn').click(toggleTantouDiv);
 	$('#toggleShareBtn').click(toggleShareDiv);
+	$('#toggleAboutBtn').click(toggleAboutDiv);
 
 	setDataDivEvents(); // 取り込みボタン
 	setSearchDivEvents();// 検索ボタン
@@ -117,7 +120,7 @@ function createMarker(id, result, dataRow, isFocused){
 // InfoWindowを作成
 function createInfoWindow(dataRow){
 	// 中身の作成
-	var content ='<div class="infoDiv">';
+	var content ='<div class="infoWindow">';
 	Object.keys(dataRow).forEach(function(k){
 		content += k + ':' + dataRow[k] + '<br>';
 	});
@@ -405,6 +408,7 @@ function myCallBack(request, result){
 
 }
 
+// mapのオプションを設定する場所
 function getMyMapOption(){
 	var mapCenter = {lat:35.5, lng:139.6};
 	var	mapzoom = 14;
@@ -414,7 +418,7 @@ function getMyMapOption(){
 		mapTypeControl:false,
 		streetViewControl:false,
 		streetViewControlOptions:{
-			position: google.maps.ControlPosition.RIGHT_TOP,
+			position: google.maps.ControlPosition.RIGHT_CENTER,
 		},
 		zoomControl:false,
 		zoomControlOptions:{

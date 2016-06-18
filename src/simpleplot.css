@@ -21,183 +21,64 @@ body, html{
 	width:100%;
 	height:100%;
 }
-#sideDiv{
+
+
+/*-----------------------------------------------------
+leftSideDiv
+-----------------------------------------------------*/
+#leftSideDiv{
 	position:fixed;
 	top:0px;
 	left:0px;
-	width:140px;
-	line-height: 28px;
 	overflow-x: hidden;
 }
+/*-----------------------------------------------------
+menuDiv
+-----------------------------------------------------*/
 #menuDiv{
-	line-height: 1.4rem;
-	text-align: center;
-	padding:4px;
-}
-#dataDiv{
-	position:fixed;
-	text-align: center;
-	top: 10px;
-	left: 140px;
-	width: calc(100% - 200px);
-	padding: 10px 10px;
-	border-radius:10px;
-	background: Honeydew;
-	/*visibility: hidden;*/
-	display:none;
-}
-#dataClose{
-}
-#dataText{
-	width: calc(100% - 3em);
-	height: 15em;
-}
-
-/*	searchDiv	*/
-#searchDiv{
-	position: fixed;
-	text-align: center;
-	top: 10px;
-	left: 140px;
-	padding: 10px 10px;
-	border-radius:5px;
-	background: Honeydew;
-
-	display: none; /*TODO*/
-}
-
-/*	slideDiv	*/
-#slideDiv{
-	position: absolute;
-	left: 0;
-	right: 0;
-	/*bottom: 1rem;*/
-	/*top: 1rem;*/
-	bottom: 1rem;
-	width: 100%;
-	max-width: 400px;
-	margin: 0 auto;
-	padding: 0;
-	text-align: center;
-	background: #ffc;
-	overflow: hidden;
-	opacity: .7;
+	background-color: #eee;
+	line-height: 4.0rem;
+	padding:10px;
 	display: none;
-}
-#slideFirstLine{
-	margin: 0;
-	padding: 0;
-	height: 2.2rem;
-	line-height:2.2rem;
-}
-#slideSecondLine{
-	margin: 0;
-	padding: 0;
-	height: 2.2rem;
-	line-height:2.2rem;
-}
-#slideNowTantou{
-	display: inline-block;
-	overflow: hidden;
-	max-width:250px;
-}
+¥}
 
-#slideNowContent{
-	display: inline-block;
-	overflow: hidden;
-	max-width:250px;
+/*-----------------------------------------------------
+rightSideDiv
+-----------------------------------------------------*/
+#rightSideDiv{
+	position:fixed;
+	top:0px;
+	right:0px;
+	text-align: left;
+	overflow-x: hidden;
+	padding: 8px;
 }
-#slideForward{
-	width:50px;
-	float:right;
-	background: #dfd;
-}
-#slideBackward{
-	width:50px;
-	float:right;
-	background: #dfd;
-}
-/*		*/
+/*-----------------------------------------------------
+switchDiv
+-----------------------------------------------------*/
 #switchDiv{
-	position: fixed;
-	top: 1rem;
-	right: 4rem;
+	/*position: fixed;*/
+	/*padding: 0.8rem;*/
 }
 #switchDiv select{
-	font-size: 1.2rem;
-	min-width: 10rem;
-}
-#shareDiv{
-	position: fixed;
-	padding: 20px 10px 60px;
-	top: 1rem;
-	left: 140px;
-	width: calc(100% - 200px);
-	/*height: 200px;*/
-	text-align: center;
-	line-height:3rem;
-	background: #ccc;
-	border-radius: 15px;
-	display: none;
-}
-#shareSelect{
-	width: 200px;
-}
-
-#dialogDiv{
-	position: fixed;
-	padding: 20px 10px 60px;
-	top: 1rem;
-	left: 140px;
-	width: calc(100% - 200px);
-	/*height: 200px;*/
-	text-align: center;
-	line-height:3rem;
-	background: #ccc;
-	border-radius: 15px;
-	display: none;
-}
-#dialogTitle{
 	font-size: 2rem;
+	min-width: 10rem;
+	vertical-align: middle;
 }
-#dialogDiv div{
+#switchDiv button{
+	vertical-align: middle;
 }
-#dialogSelect{
-	font-size: 2.5rem;
-}
-#dialogOKBtn{
-	width: 10rem;
-	height: 3rem;
-}
-#dialogClose{
-}
-#statusDiv{
-	position: absolute;
-	left: 0px;
-	right: 0px;
-	bottom: 8rem;
-	width: 100%;
-	max-width: 400px;
-	font-size: 1rem;
-	margin: 0 auto;
-	text-align: center;
-	background: #fff;
-	overflow: hidden;
-	opacity: .8;
-	display: none;
-}
+/*-----------------------------------------------------
+tantouDiv
+-----------------------------------------------------*/
 #tantouDiv{
-	display:none;
-	position:fixed;
-	top:4rem;
-	right:3rem;
+	/*position:fixed;*/
 	width:140px;
 	max-height: 80%;
 	line-height: 28px;
 	overflow-x: hidden;
 	overflow-y: scroll;
-}
-.tantouSpan{
+	display:none;
 }
 
 .tantouItem{
@@ -221,6 +102,143 @@ body, html{
 	content : "⇒";
 }
 
+/*-----------------------------------------------------
+searchDiv
+-----------------------------------------------------*/
+#searchDiv{
+	position: fixed;
+	text-align: center;
+	top: 10px;
+	left: 140px;
+	padding: 10px 10px;
+	border-radius:5px;
+	background: Honeydew;
+
+	display: none; /*TODO*/
+}
+/*-----------------------------------------------------
+slideDiv
+-----------------------------------------------------*/
+#slideDiv{
+	position: absolute;
+	left: 0;
+	right: 0;
+	/*bottom: 1rem;*/
+	/*top: 1rem;*/
+	bottom: 1.5rem;
+	width: 100%;
+	max-width: 500px;
+	margin: 0 auto;
+	padding: 0;
+	text-align: center;
+	background: #ffc;
+	overflow: hidden;
+	opacity: .7;
+	display: none;
+}
+#slideFirstLine{
+	margin: 0;
+	padding: 0;
+	height: 3.0rem;
+	line-height:3.0rem;
+}
+#slideSecondLine{
+	margin: 0;
+	padding: 0;
+	height: 3.0rem;
+	line-height:3.0rem;
+}
+#slideNowTantou{
+	display: inline-block;
+	overflow: hidden;
+	max-width:250px;
+}
+
+#slideNowContent{
+	display: inline-block;
+	overflow: hidden;
+	max-width:250px;
+}
+#slideForward{
+	width:70px;
+	float:right;
+	background: #dfd;
+}
+#slideBackward{
+	width:70px;
+	float:right;
+	background: #dfd;
+}
+
+/*-----------------------------------------------------
+shareDiv
+-----------------------------------------------------*/
+#shareDiv{
+	background: #ccc;
+}
+#shareSelect{
+	width: 200px;
+}
+/*-----------------------------------------------------
+dataDiv
+-----------------------------------------------------*/
+#dataDiv{
+	background: Honeydew;
+}
+#dataClose{
+}
+#dataText{
+	width: calc(100% - 3em);
+	height: 15em;
+}
+
+/*-----------------------------------------------------
+dialogDiv
+-----------------------------------------------------*/
+#dialogDiv{
+	background: #ccc;
+}
+#dialogTitle{
+	font-size: 2rem;
+}
+#dialogSelect{
+	font-size: 2.5rem;
+}
+#dialogOKBtn{
+	width: 10rem;
+	height: 3rem;
+}
+#dialogClose{
+}
+/*-----------------------------------------------------
+aboutDiv
+-----------------------------------------------------*/
+#aboutDiv{
+	background: #fcc;
+}
+
+/*-----------------------------------------------------
+statusDiv
+-----------------------------------------------------*/
+#statusDiv{
+	position: absolute;
+	left: 0px;
+	right: 0px;
+	bottom: 8rem;
+	width: 100%;
+	max-width: 400px;
+	font-size: 1rem;
+	margin: 0 auto;
+	text-align: center;
+	background: #fff;
+	overflow: hidden;
+	opacity: .8;
+	display: none;
+}
+
+/*-----------------------------------------------------
+marker class
+-----------------------------------------------------*/
 .marker{
 	display: inline-block;
 	position: relative;
@@ -280,7 +298,13 @@ body, html{
 	width: 140px;
 	overflow: hidden;
 }
-
+.infoWindow{
+	width: 250px;
+	overflow: hidden;
+}
+/*-----------------------------------------------------
+general class
+-----------------------------------------------------*/
 .clickable{
 	cursor: pointer;
 	user-select: none; /* CSS3 */
@@ -298,8 +322,20 @@ body, html{
 	font-size: 1.8rem;
 	line-height: 1.8rem;
 }
-
-.infoDiv{
-	width: 250px;
-	overflow: hidden;
+.buttonIcon{
+	width:1.8rem;
+	height:1.8rem;
+}
+.dialog{
+	position: fixed;
+	padding: 20px 10px 60px;
+	top: 1rem;
+	left: 140px;
+	width: calc(100% - 200px);
+	/*height: 200px;*/
+	text-align: center;
+	line-height:3rem;
+	/*background: #ccc;*/
+	border-radius: 15px;
+	display: none;
 }
