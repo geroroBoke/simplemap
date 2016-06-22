@@ -121,6 +121,7 @@ GeoHandle.doSearch = function (){
 		GeoHandle.geocoder.geocode({address: GeoHandle.nowRequest}, GeoHandle.searchAddress);
 	}
 }
+
 //住所検索結果の取得に成功した時のアクション
 GeoHandle.onGetResult = function(request, result){
 
@@ -191,6 +192,7 @@ GeoHandle.clearLocalStorage = function(){
 
 // TODO この関数いる？searchAddress内に入れた方がいい？
 GeoHandle.getResultIfStatusOK =function(results, status){
+
 	switch(status){
 		case google.maps.GeocoderStatus.OK:
 		//	成功の場合
@@ -212,28 +214,41 @@ GeoHandle.getResultIfStatusOK =function(results, status){
 
 //GeocodeResultから適度長さの（市町村以下の）住所名を取得する
 GeoHandle.getGcrAddressText = function(gcResult){
+
+	// ここに住所を格納していく
 	var stradr="";
+
+	console.log(gcResult.address_components);
+
 	for(var i=0; i < gcResult.address_components.length; i++){
 		var cmpnt = gcResult.address_components[i]
 		var lname = cmpnt.long_name;
 
 		// 挿入のあれこれ
+		//マンション名はなにもしない
 		if (cmpnt.types[0] =='premise'){
-																	//マンション名はなにもしない
+		//一つ目はとりあえず入れる
 		}else if (stradr.length == 0){
-			stradr = lname;						 //一つ目はとりあえず入れる
+			stradr = lname;
+		//数字だけなら間にハイフンをはさんで追加する
 		}else if (lname.match(/[^0-9０-９]/)==null){
-				stradr = lname + '－' + stradr;	 //数字だけなら間にハイフンをはさんで追加する
+				stradr = lname + '－' + stradr;
+		//それ以外は普通に追加する
 		}else {
-				stradr = lname + stradr;		//それ以外は普通に追加する
+				stradr = lname + stradr;
 		}
 
-		// 番地以上のものをいれたらそこで終わりにする
-		if (stradr.length > 0 &&
-			cmpnt.types[0].match(/sublocality_level_[2-9]/)==null) break;
-	}
-	if (stradr == '１'){
-		console.log("a");
+		// 番地以外のものを挿入したらループを抜ける
+		if (stradr.length > 0 ){
+			// 番地要素
+			if (!cmpnt.types.some(findSubLocatity2_9)){
+				break;
+			}
+			// sublocality_level_2_9に当てはまればtrueを返す
+			function findSubLocatity2_9(e){
+				return e.match(/sublocality_level_[2-9]/);　// sublocalityの1は町名、2-9は番地など（個人調べ）
+			}
+		}
 	}
 	return stradr;
 }

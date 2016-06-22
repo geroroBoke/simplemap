@@ -82,7 +82,8 @@ function createMarker(id, result, dataRow, isFocused){
 	// 吹き出しの色を取得
 	var colorText = getTantouCssColorText(dataRow[myGroupBy]);
 
-	var commentText = result.address; // 横のコメントの内容
+	// 横のコメントの内容
+	var commentText = result.address;
 
 	// richmarkerのcontentの作成
 	var $contentDiv = $('<div>')
