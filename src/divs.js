@@ -201,7 +201,7 @@ function toggleShareDiv(){
 		});
 
 		// OKイベント
-		$('#shareOKBtn').click(function(){
+		$('#shareSelect').change(function(){
 
 			// セレクトボックスで選択されている一覧
 			var selected = $('#shareSelect').val();
@@ -210,7 +210,8 @@ function toggleShareDiv(){
 			// 出力用のデータを作成する
 			var data = myData.filterRow(myGroupBy, null); // 一旦コピーする
 			data = data.filterRow(myGroupBy, selected); // 行
-			if ($('#shareChkTrim').val()){
+
+			if ($('#shareTrimField').prop('checked')){
 				data = data.filterColumn([myGroupBy, myPlotBy, mySortBy]); // 列
 			}
 			if (!data) return;
@@ -222,6 +223,9 @@ function toggleShareDiv(){
 			// 表示フィールドに出力する
 			var myURI = location.href.replace(location.hash, "");
 			$('#shareURIField').val(myURI + '#' + uriText);
+
+			// ステータスフィールドに文字数を表示する
+			$('#shareStatus').text('ハッシュの文字数:' + uriText.length);
 		});
 
 		// グループ一覧をセレクトボックスに格納
@@ -229,7 +233,6 @@ function toggleShareDiv(){
 		myData.getList(myGroupBy, true).forEach(function(e){
 			$('#shareSelect').append($('<option>').val(e).text(e));
 		});
-
 	}
 }
 

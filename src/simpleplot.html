@@ -94,10 +94,10 @@
 		<div id="shareClose" class="clickable closeButton">×</div>
 		<div id="shareTitle">データの共有</div>
 		<div id="shareMessage">共有するグループを選択してください（複数選択可能）</div>
-		<p><select id="shareSelect" multiple size="5"></select></p>
-		<p><input id="shareChkTrim" type="checkbox" checked="true"><label for="shareChkTrim">最低限のデータのみ共有</label></p>
-		<button id="shareOKBtn">OK</button>
-		<p><textarea id="shareURIField" rows="8" cols="80"></textarea></p>
+		<div><select id="shareSelect" multiple size="5"></select></div>
+		<div><input id="shareTrimField" type="checkbox" checked="true"><label for="shareTrimField">最低限のフィールド（住所、グループ、順番）のみ共有</label></div>
+		<p><textarea id="shareURIField" rows="8" cols="80" readonly></textarea></p>
+		<div id="shareStatus"></div>
 	</div>
 
 	<!-- このサイトについてダイアログ -->
