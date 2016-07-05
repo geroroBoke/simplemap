@@ -507,4 +507,7 @@ function toggleMenuDiv(){
 // --------------------------------------------------------------------
 function toggleAboutDiv(){
 	$('#aboutDiv').toggle();
+	$('#aboutClose').click(function(){
+		$('#aboutDiv').hide();
+	});
 }
