@@ -319,6 +319,7 @@ function setSearchDivEvents(){
 
 // セレクトボックスが変更された時に呼び出される
 function onSearchDivSelectChanged(){
+
 	// 選択中のグループの取得
 	var groupName = $(this).val();
 
@@ -424,7 +425,7 @@ function manageSlide(increment, setId){
 	if (typeof manageSlide.id === 'undefined'){
 		manageSlide.id = 0;
 	}
-	if (setId){
+	if (typeof setId !== 'undefined'){
 		manageSlide.id = setId;
 	}
 
@@ -483,11 +484,14 @@ function setSwitchDiv(){
 
 	// 担当者が変更された時のイベント
 	$switchSelect.change(function(){
+
 		// 担当者名を取得
 		var tantou = $(this).find('option:selected').text();
 
 		// 指定した担当スパンをフォーカス状態にする
 		setFocusedTantou(tantou);
+
+		manageSlide(0, 0)
 
 	});
 
