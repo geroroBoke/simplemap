@@ -13,11 +13,14 @@ function trimGarbage(str){
 
 // 住所文字列からマンション名（と思われるもの）以降を取り除く	数字より後ろの文字はマンション名と判断する
 function trimMansionOrlater(str){
+
 	// 文字列でない場合は終了
 	if (typeof str != 'string') return;
+
 	// 数字と区切り文字の定義
 	var arrNumber = '0123456789０１２３４５６７８９';
 	var arrDelimiter = '[ 　-ーー〜~−ｰー‐－の丁目]';
+
 	// 実行する
 	var flgNumber = false; // 数字がすでに出現している
 	for(var i = 0 ; i < str.length ; i++){

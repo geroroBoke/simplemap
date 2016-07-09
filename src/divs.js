@@ -18,7 +18,7 @@ function setTantouDiv(){
 	$selallSpan.appendTo($tantouDiv);
 
 	// 各担当者のtantouSpanを作成する
-	myData.getList(myGroupBy, true).forEach(function(element){
+	myData.getList(myGroupBy, {isUnique : true} ).forEach(function(element){
 		var $tantouSpan = createTantouSpan(element);
 		$tantouSpan.click(event_TantouSpanClick);
 		$tantouSpan.appendTo($tantouDiv);
@@ -230,7 +230,7 @@ function toggleShareDiv(){
 
 		// グループ一覧をセレクトボックスに格納
 		$('#shareSelect').empty();
-		myData.getList(myGroupBy, true).forEach(function(e){
+		myData.getList(myGroupBy).forEach(function(e){
 			$('#shareSelect').append($('<option>').val(e).text(e));
 		});
 	}
@@ -347,7 +347,7 @@ function refleshSearchDivSelect(){
 
 	// 各グループを入れる
 	if (myData){
-		var groupList = myData.getList(myGroupBy, true);
+		var groupList = myData.getList(myGroupBy);
 		groupList.forEach(function(groupName){
 			$select.append($('<option>', {value: groupName, text: groupName}));
 		});
@@ -475,7 +475,7 @@ function setSwitchDiv(){
 	$switchSelect.empty();
 
 	// 担当者一覧でオプションを作成する
-	myData.getList(myGroupBy, true).forEach(function(tantou){
+	myData.getList(myGroupBy).forEach(function(tantou){
 		$('<option>')
 			.val(tantou)
 			.text(tantou)

@@ -4,7 +4,7 @@
 // --------------------------------------------------------------------
 // 担当者の名前から色を選出する
 function getTantouCssColorText(tantouName){
-	var tantouArr = myData.getList(myGroupBy, true);
+	var tantouArr = myData.getList(myGroupBy);
 	var index = tantouArr.indexOf(tantouName);
 	var length = tantouArr.length;
 	return 'hsla(' +(300/length*index)	+ ' , ' + (35+((index%2)*25))+ '%, 50%, 1)'
@@ -25,8 +25,13 @@ function setFocusedTantou(tantou){
 	// $('#switchSelect').val(getFocusedTantou());
 	$('#switchSelect').val(tantou);
 
-	// 優先的に住所を調べる
-	GeoHandle.addAddress(myData.getList(myPlotBy, true, myGroupBy, tantou), true);
+	// 住所を調べる
+	var getOptions = {
+		findLabel : myGroupBy,
+		findValue : tantou
+	}
+	var addressList = myData.getList(myPlotBy, getOptions)
+	GeoHandle.addAddress(addressList,true);
 
 	// スライドの表示IDを管理・反映
 	manageSlide(0, 0);
@@ -58,7 +63,11 @@ function getMaxOrderOfGroup(groupName){
 	if (!myData){return 0;}
 
 	// データから該当グループの順番フィールドの配列を取得
-	var listOrders = myData.getList(mySortBy, true, myGroupBy, groupName);
+	var getOptions = {
+		findLabel : myGroupBy,
+		findValue : groupName
+	}
+	var listOrders = myData.getList(mySortBy, getOptions);
 
 	// 順番配列の取得に失敗したら0を返す
 	if (!listOrders) {

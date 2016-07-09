@@ -49,8 +49,10 @@ function main(){
 		importData(dataText, option);// default true true
 	}
 }
-
-// initialze global variants
+// --------------------------------------------------------------------
+// initGlobalVariants
+// --------------------------------------------------------------------
+//initialze global variants
 function initGlobalVariants(){
 	// データ本体を初期化
 	 myData = null;
@@ -75,6 +77,14 @@ function initGlobalVariants(){
 //	parseOption
 // --------------------------------------------------------------------
 
+// デフォルトのPartseOption値を取得する
+function getDefaultParseOption(getField){
+	if (getField == 'title') return 'かんたん地図プロット';
+	if (getField == 'groupby') return '担当者';
+	if (getField == 'sortby') return '訪問順';
+	if (getField == 'plotby') return '住所';
+}
+
 // #制御文から各パース設定を取得する
 function retriveParseOptions(){
 	if (retriveParseOption(dataText, 'title')) myTitle = retriveParseOption(dataText, 'title');
@@ -95,14 +105,6 @@ function retriveParseOption(srcText, getField){
 		}
 	});
 	return result;
-}
-
-// デフォルトのPartseOption値を取得する
-function getDefaultParseOption(getField){
-	if (getField == 'title') return 'かんたん地図プロット';
-	if (getField == 'groupby') return '担当者';
-	if (getField == 'sortby') return '訪問順';
-	if (getField == 'plotby') return '住所';
 }
 
 function outputParseOptionText(){
@@ -247,8 +249,8 @@ function initializeMap(){
 	// 各住所のgeocodeが成功する時のコールバックを設定
 	GeoHandle.onLocate = myCallBack;
 
-	//
-	GeoHandle.addAddress(myData.getList(myPlotBy, true));//住所を重複なしのリストにして追加する
+	//住所を重複なしのリストにして追加する
+	GeoHandle.addAddress(myData.getList(myPlotBy));
 }
 
 // 各住所のgeocodeが成功する度に呼び出されるルーチン
@@ -257,10 +259,18 @@ function myCallBack(request, result){
 	// マーカーを再描画
 	refleshMarker();
 
-	//　ステータスに残り検索数を表示する
+	// ステータス表示用文章を用意
 	var buffer = '';
+
+	// 検索が成功した場所を追記
 	buffer += request + 'を検索 ';
-	if (GeoHandle.listAddress.length) buffer += '（残り' + (GeoHandle.listAddress.length)	+ '件）';
+
+	// 残りの検索数を表示する
+	// if (GeoHandle.listAddress.length) {
+	buffer += '（残り' + (GeoHandle.listAddress.length)	+ '件）';
+	// }
+
+	// ステータスに表示する
 	setStatusText(buffer, 2000);
 
 }
