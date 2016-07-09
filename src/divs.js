@@ -208,8 +208,7 @@ function toggleShareDiv(){
 			if (!selected) return
 
 			// 出力用のデータを作成する
-			var data = myData.filterRow(myGroupBy, null); // 一旦コピーする
-			data = data.filterRow(myGroupBy, selected); // 行
+			var data = mydata.filterRow(myGroupBy, selected); 
 
 			if ($('#shareTrimField').prop('checked')){
 				data = data.filterColumn([myGroupBy, myPlotBy, mySortBy]); // 列
