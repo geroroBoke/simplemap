@@ -86,11 +86,11 @@ function getDefaultParseOption(getField){
 }
 
 // #制御文から各パース設定を取得する
-function retriveParseOptions(){
-	if (retriveParseOption(dataText, 'title')) myTitle = retriveParseOption(dataText, 'title');
-	if (retriveParseOption(dataText, 'groupby')) myGroupBy = retriveParseOption(dataText, 'groupby');
-	if (retriveParseOption(dataText, 'sortby')) mySortBy = retriveParseOption(dataText, 'sortby');
-	if (retriveParseOption(dataText, 'plotby')) myPlotBy = retriveParseOption(dataText, 'plotby');
+function retriveParseOptions(srcText){
+	if (retriveParseOption(srcText, 'title')) myTitle = retriveParseOption(dataText, 'title');
+	if (retriveParseOption(srcText, 'groupby')) myGroupBy = retriveParseOption(dataText, 'groupby');
+	if (retriveParseOption(srcText, 'sortby')) mySortBy = retriveParseOption(dataText, 'sortby');
+	if (retriveParseOption(srcText, 'plotby')) myPlotBy = retriveParseOption(dataText, 'plotby');
 }
 
 function retriveParseOption(srcText, getField){
@@ -163,8 +163,10 @@ function importData(dataText, importOptions){
 	// テキストが空なら終了
 	if (!dataText) return;
 
+	if (!importData) importData = {};
+
 	// #制御文からパース設定を取得する
-	retriveParseOptions();
+	retriveParseOptions(dataText);
 
 	// ソースからパース設定に関する行を取り除く
 	dataText = trimParseOptions(dataText);
