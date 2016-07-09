@@ -515,3 +515,65 @@ function toggleAboutDiv(){
 		$('#aboutDiv').hide();
 	});
 }
+
+// ダイアログボックスからparseOptionを取得する
+function getMyParseOptionsByDialog(data, onFinish){
+
+	// doNextActionで実行する関数一覧
+	var arrFunc = [
+		getPlotByOption,
+		getGroupByOption,
+		getSortByOption
+	];
+	var idFunc = 0;
+
+	// 最初の関数を実行
+	doNextAction();
+
+	// OKを押されるたびに次の関数を実行する
+	function doNextAction(){
+		if (idFunc < arrFunc.length ) {
+			arrFunc[idFunc++]();
+		} else{
+			// 終了指定アクション
+			onFinish();
+		}
+	}
+
+	function getPlotByOption(){
+		setDialogDiv(
+			'『住所』フィールドの選択',
+			'マーカーの座標を示す住所などが格納されているフィールドを選択してください',
+			Object.keys(data.data[0]),
+			function(option){
+				myPlotBy = option;
+				doNextAction();
+			},
+			myPlotBy
+		);
+	}
+	function getGroupByOption(){
+		setDialogDiv(
+			'『グループ』フィールドの選択',
+			'マーカーの色分けの基準とするフィールドを選択してください',
+			Object.keys(data.data[0]),
+			function(option){
+				myGroupBy = option;
+				doNextAction();
+			},
+			myGroupBy
+		);
+	}
+	function getSortByOption(){
+		setDialogDiv(
+			'『順番』フィールドの選択',
+			'並べ替えの基準とするフィールドを選択してください',
+			Object.keys(data.data[0]),
+			function(option){
+				mySortBy = option;
+				doNextAction();
+			},
+			mySortBy
+		);
+	}
+}

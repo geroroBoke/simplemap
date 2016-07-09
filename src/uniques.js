@@ -98,7 +98,6 @@ function mapExpandBounds(marker){
 	}
 }
 
-
 // 担当者スパンに特定のクラスが付いているか判別する
 function isTantouSpanClassed(tantou, className){
 	if (typeof tantou !== 'string') return false;
