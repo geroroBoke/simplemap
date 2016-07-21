@@ -124,27 +124,37 @@ function setStatusText(text, milliseconds){
 // --------------------------------------------------------------------
 // データ取込フォーム dataDiv関連のイベントを設定する
 function setDataDivEvents(){
+
 	// プロット開始ボタン
 	$('#dataBtnImport').click(function(){
+		//
 		toggleDataDiv();
-		importData(
-			$('#dataText').val(),
-			$('#dataChkUnique').prop('checked'),
-			$('#dataChkTrim').prop('checked'),
-			$('#dataChkMansion').prop('checked')
-		);
+
+		// isReset = false;
+		var dataText = $('#dataText').val();
+		var option = {
+			isUniqueRecord : $('#dataChkUnique').prop('checked') ,
+			isTrimGarbage : $('#dataChkTrim').prop('checked'),
+			isTrimMansion : $('#dataChkMansion').prop('checked'),
+			isReset: false,
+		};
+		importData(dataText, option);
 	});
 
 	// 再構成ボタン
 	$('#dataBtnReset').click(function(){
+
 		toggleDataDiv();
-		importData(
-			$('#dataText').val(),
-			$('#dataChkUnique').prop('checked'),
-			$('#dataChkTrim').prop('checked'),
-			$('#dataChkMansion').prop('checked'),
-			true// reset true
-		);
+
+		// isReset = true;
+		var dataText = $('#dataText').val();
+		var option = {
+			isUniqueRecord : $('#dataChkUnique').prop('checked') ,
+			isTrimGarbage : $('#dataChkTrim').prop('checked'),
+			isTrimMansion : $('#dataChkMansion').prop('checked'),
+			isReset: true,
+		};
+		importData(dataText, option);
 	});
 
 	// キャッシュを削除ボタン
@@ -182,6 +192,53 @@ function toggleDataDiv(){
 // --------------------------------------------------------------------
 //	shareDiv
 // --------------------------------------------------------------------
+function setShareDivEvents(){
+	// 閉じるボタンイベント
+	$('#shareClose').click(function(){
+		$('#shareDiv').hide();
+	});
+
+	// 全て選択状態ボタン
+	$('#shareBtnSelectAll').click(function(){
+		// セレクトボックスの選択状態を変更する
+		$('#shareSelect option').prop('selected', true);
+		// イベントを起こす
+		$('#shareSelect').change();
+	});
+
+	// 必要最低限チェック
+	$('#shareChkTrimField').click(function(){
+		// イベントを起こす
+		$('#shareSelect').change();
+	});
+
+	// OKイベント
+	$('#shareSelect').change(function(){
+
+		// 共有用のハッシュ部分を取得する
+		var hashText = ShareDivGetHashText();
+		if (!hashText) hashText = '';
+
+		// 表示中のhtmlのURIを取得する
+		var myURI = location.href.replace(location.hash, "");
+
+		// フィールドに#でつなげて表示する
+		$('#shareURIField').val(myURI + '#' + hashText);
+
+		// ステータスフィールドには文字数を表示する
+		$('#shareStatus').text('#文字数:' + hashText.length);
+	});
+
+	// メールで共有ボタン
+	$('#shareSendMail').click(function(){
+		var subject = encodeURIComponent(myTitle);
+		var body = encodeURIComponent($('#shareURIField').val());
+		window.location.href ='mailto:?subject=' + subject + '&body=' + body;
+	});
+
+
+}
+
 function toggleShareDiv(){
 	// データが無ければ終了
 	if (!myData){
@@ -195,44 +252,38 @@ function toggleShareDiv(){
 	// 表示ONなら
 	if($('#shareDiv').is(':visible')){
 
-		// 閉じるボタンイベント
-		$('#shareClose').click(function(){
-			$('#shareDiv').hide();
-		});
-
-		// OKイベント
-		$('#shareSelect').change(function(){
-
-			// セレクトボックスで選択されている一覧
-			var selected = $('#shareSelect').val();
-			if (!selected) return
-
-			// 出力用のデータを作成する
-			var data = mydata.filterRow(myGroupBy, selected); 
-
-			if ($('#shareTrimField').prop('checked')){
-				data = data.filterColumn([myGroupBy, myPlotBy, mySortBy]); // 列
-			}
-			if (!data) return;
-
-			// uriに変換する
-			var uriText = exportData(data);
-			if (!uriText) return;
-
-			// 表示フィールドに出力する
-			var myURI = location.href.replace(location.hash, "");
-			$('#shareURIField').val(myURI + '#' + uriText);
-
-			// ステータスフィールドに文字数を表示する
-			$('#shareStatus').text('ハッシュの文字数:' + uriText.length);
-		});
-
 		// グループ一覧をセレクトボックスに格納
 		$('#shareSelect').empty();
 		myData.getList(myGroupBy).forEach(function(e){
 			$('#shareSelect').append($('<option>').val(e).text(e));
 		});
+
+		// イベントを起こす
+		$('#shareSelect option').prop('selected', true);
+		$('#shareSelect').change();
 	}
+}
+
+
+// shareSelectで選択されたいるグループを基に共有用文字列を出力する
+function ShareDivGetHashText(){
+
+	// セレクトボックスで選択されているグループを配列で取得
+	var selected = $('#shareSelect').val();
+	if (!selected) return
+
+	// 選択中のグループでデータを絞る
+	var data = myData.filterRow(myGroupBy, selected);
+	if (!data) return;
+
+	//　最小限の列だけにする
+	if ($('#shareChkTrimField').prop('checked')){
+		data = data.filterColumn([myGroupBy, myPlotBy, mySortBy]);
+	}
+	if (!data) return;
+
+	// 共有文字列に変換する
+	return exportData(data);
 }
 
 // --------------------------------------------------------------------

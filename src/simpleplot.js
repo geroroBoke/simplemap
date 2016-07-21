@@ -18,6 +18,9 @@ $(function(){
 //	main
 // --------------------------------------------------------------------
 function main(){
+	// Clipboard.jsでコピペできるようにする
+	var clipboard = new Clipboard('.clipBtn');
+
 	// トグルスイッチ
 
 	$('#toggleMenuBtn').click(toggleMenuDiv);
@@ -30,6 +33,7 @@ function main(){
 	setDataDivEvents(); // 取り込みボタン
 	setSearchDivEvents();// 検索ボタン
 	setSlideDivEvents();// 切替スライド
+	setShareDivEvents();
 
 	// initialze global variants
 	initGlobalVariants();
@@ -38,15 +42,16 @@ function main(){
 	GeoHandle.init(true);
 
 	// URIに#以降があればそのパラメータでimportDataを行う
-	if (location.hash.length >= 0){
-		var dataText = decodeURI(location.hash.substring(1));
+	if (location.hash.length >= 1){
+		// var dataText = decodeURI(location.hash.substring(1));
+		var dataText = lzbase62.decompress(location.hash.substring(1));
 		var option = {
 			isUniqueRecord : true ,
 			isTrimGarbage : true,
 			isTrimMansion : true,
 			isReset: false,
 		}
-		importData(dataText, option);// default true true
+		importData(dataText, option);
 	}
 }
 // --------------------------------------------------------------------
@@ -86,11 +91,11 @@ function getDefaultParseOption(getField){
 }
 
 // #制御文から各パース設定を取得する
-function retriveParseOptions(srcText){
-	if (retriveParseOption(srcText, 'title')) myTitle = retriveParseOption(dataText, 'title');
-	if (retriveParseOption(srcText, 'groupby')) myGroupBy = retriveParseOption(dataText, 'groupby');
-	if (retriveParseOption(srcText, 'sortby')) mySortBy = retriveParseOption(dataText, 'sortby');
-	if (retriveParseOption(srcText, 'plotby')) myPlotBy = retriveParseOption(dataText, 'plotby');
+function retriveParseOptions(dataText){
+	if (retriveParseOption(dataText, 'title')) myTitle = retriveParseOption(dataText, 'title');
+	if (retriveParseOption(dataText, 'groupby')) myGroupBy = retriveParseOption(dataText, 'groupby');
+	if (retriveParseOption(dataText, 'sortby')) mySortBy = retriveParseOption(dataText, 'sortby');
+	if (retriveParseOption(dataText, 'plotby')) myPlotBy = retriveParseOption(dataText, 'plotby');
 }
 
 function retriveParseOption(srcText, getField){
@@ -107,7 +112,7 @@ function retriveParseOption(srcText, getField){
 	return result;
 }
 
-function outputParseOptionText(){
+function getParseOptionText(){
 	var tempText = '';
 	tempText += '#title:' + myTitle + '\n';
 	tempText += '#groupby:' + myGroupBy + '\n';
@@ -129,9 +134,9 @@ function trimParseOptions(srcText){
 // データ上にプロットに必要なフィールドが全て揃っているか？
 function isAllParseOptionsOnField(data){
 
-	if (!data.getList(myPlotBy)[0]) return false;
-	if (!data.getList(mySortBy)[0]) return false;
-	if (!data.getList(myGroupBy)[0]) return false;
+	if (data.getList(myPlotBy)[0] === undefined ) return false;
+	if (data.getList(mySortBy)[0]  === undefined ) return false;
+	if (data.getList(myGroupBy)[0]  === undefined ) return false;
 
 	return true;
 }
@@ -141,24 +146,32 @@ function isAllParseOptionsOnField(data){
 // --------------------------------------------------------------------
 // 指定されたObjectArrayをURIエンコードされた文字列として返す
 function exportData(data){
+
+	// データが空でない場合のみ
 	if (!data) return;
 
-	var csvtext = data.csvOutput('\t');
-	if (!csvtext) return;
-	return encodeURI(csvtext);
+	// dataTextの取得
+	var dataText = "";
+	var csvText = data.csvOutput('\t')
+	if (!csvText) return;
+	dataText += csvText;
+	dataText += getParseOptionText();
+
+	// return encodeURI(csvtext);
+	return lzbase62.compress(dataText);
 }
 
 // --------------------------------------------------------------------
 //	importData
 // --------------------------------------------------------------------
 // 渡されたテキストをパースして地図プロットする
-// importOptions
-	// isUniqueRecord : importOptions.isUniqueRecord ,
-	// isTrimGarbage : importOptions.isTrimGarbage,
-	// isTrimMansion : importOptions.isTrimMansion,
-	// isReset: importOptions.isReset,
+// parseOptions
+	// isUniqueRecord : parseOptions.isUniqueRecord ,
+	// isTrimGarbage : parseOptions.isTrimGarbage,
+	// isTrimMansion : parseOptions.isTrimMansion,
+	// isReset: parseOptions.isReset,
 
-function importData(dataText, importOptions){
+function importData(dataText, parseOptions){
 
 	// テキストが空なら終了
 	if (!dataText) return;
@@ -179,10 +192,11 @@ function importData(dataText, importOptions){
 
 	// リセットフラグがある、データ上に指定フィールドが無ければ、
 	// フィールド再選択ダイアログボックスを起動して、importDataをやり直す
-	if ( importOptions.isReset || !isAllParseOptionsOnField){
+	if ( parseOptions.isReset || !isAllParseOptionsOnField(data)){
 			getMyParseOptionsByDialog(data, function(){
 				// importDataをやり直す
-				importData(dataText, importOptions);
+				parseOptions.isReset = false;
+				importData(dataText, parseOptions);
 			});
 			return; // 本プロセスは終了
 	}
@@ -196,19 +210,19 @@ function importData(dataText, importOptions){
 	});
 
 	// 重複したレコードがあれば削除する
-	if (importOptions.isUniqueRecord){
+	if (parseOptions.isUniqueRecord){
 		data.data = getUniqueRecordArray(data.data)
 	};
 
 	// Trimフラグがあれば行う
-	if (importOptions.isTrimGarbage){
+	if (parseOptions.isTrimGarbage){
 		data.data.forEach(function(row){
 			row[myPlotBy] = trimGarbage(row[myPlotBy]);
 		});
 	}
 
 	// Trimフラグがあれば行う
-	if (importOptions.isTrimMansion){
+	if (parseOptions.isTrimMansion){
 		data.data.forEach(function(row){
 			row[myPlotBy] = trimMansionOrlater(trimGarbage(row[myPlotBy]));
 		});

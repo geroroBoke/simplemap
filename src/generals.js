@@ -3,6 +3,17 @@
 // --------------------------------------------------------------------
 //	generals 他のプロジェクトでも使えそうなもの
 // --------------------------------------------------------------------
+
+// 文字列をBase64へエンコードする、デコードする
+var Base64 ={
+	encode : function(str){
+		return btoa(unescape(encodeURIComponent(str)));
+	},
+	decode : function(str){
+		return decodeURIComponent(escape(atob(str)));
+	}
+}
+
 //文字列からスペースと”。”を取り除く
 function trimGarbage(str){
 		if (typeof str != 'string') return; //throw new Error('string型を引数にいれてください');
