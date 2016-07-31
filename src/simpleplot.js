@@ -21,14 +21,18 @@ function main(){
 	// Clipboard.jsでコピペできるようにする
 	var clipboard = new Clipboard('.clipBtn');
 
-	// トグルスイッチ
-
+	// トグルスイッチイベント
 	$('#toggleMenuBtn').click(toggleMenuDiv);
 	$('#toggleDataBtn').click(toggleDataDiv);
 	$('#toggleSearchBtn').click(toggleSearchDiv);
 	$('#toggleTantouBtn').click(toggleTantouDiv);
 	$('#toggleShareBtn').click(toggleShareDiv);
 	$('#toggleAboutBtn').click(toggleAboutDiv);
+
+	// メニューボタン挙動
+	$('.menuBtn').click(function(){
+		$('#menuDiv').hide();		// menuDivを隠す
+	});
 
 	setDataDivEvents(); // 取り込みボタン
 	setSearchDivEvents();// 検索ボタン

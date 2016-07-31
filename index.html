@@ -2,7 +2,7 @@
 
 <html lang="ja">
 <head>
-	<title>#title</title>
+	<title>かんたん地図プロット</title>
 	<meta charset="utf-8">
 	<meta name="viewport" content="width=device-width, initial-scale=1">
 	<link rel="stylesheet" type="text/css" href="http://yui.yahooapis.com/3.18.1/build/cssreset/cssreset-min.css">
@@ -25,26 +25,21 @@
 	</div>
 
 	<!-- leftSideDiv -->
-	<div id="leftSideDiv">
+	<div id="leftSideDiv" class="sideDiv">
 
 		<!-- menuBtn -->
 		<div>
 			<button id="toggleMenuBtn">
-			<span class="buttonIcon flaticon-menu-button" ></span>
+			<span class="flaticon-menu-button buttonIcon" ></span>
 			</button>
 		</div>
-
-		<!-- menuDiv -->
-		<div id="menuDiv">
-			<div class="clickable" id="toggleDataBtn" >データ取込</div>
-			<div class="clickable" id="toggleSearchBtn" >場所を検索</div>
-			<div class="clickable" id="toggleShareBtn" >データ共有</div>
-			<div class="clickable" id="toggleAboutBtn" >このサイトについて</div>
-		</div>
+		<!-- menuBtn -->
 	</div>
+	<!-- leftSideDiv -->
+
 
 	<!-- rightSideDiv -->
-	<div id="rightSideDiv">
+	<div id="rightSideDiv" class="sideDiv">
 		<!-- 担当フォーカス切替　セレクトボックス -->
 		<div id="switchDiv">
 			<select id="switchSelect"></select>
@@ -52,6 +47,8 @@
 				<span class="buttonIcon flaticon-browser-visualization" ></span>
 			</button>
 		</div>
+	<!-- rightSideDiv -->
+
 
 		<!-- 表示非表示切替Div-->
 		<div id="tantouDiv">
@@ -143,6 +140,15 @@
 	<div id="statusDiv">
 		<span id='statusText'></span>
 	</div>
+
+	<!-- menuDiv -->
+	<div id="menuDiv">
+		<div class="clickable menuBtn" id="toggleDataBtn" >データ取込</div>
+		<div class="clickable menuBtn" id="toggleSearchBtn" >場所を検索</div>
+		<div class="clickable menuBtn" id="toggleShareBtn" >データ共有</div>
+		<div class="clickable menuBtn" id="toggleAboutBtn" >このサイトについて</div>
+	</div>
+	<!-- menuDiv -->
 
 	<!-- スクリプト本体 -->
 	<script src="./src/geohandle.js"></script>

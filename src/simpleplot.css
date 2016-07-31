@@ -22,37 +22,41 @@ body, html{
 	height:100%;
 }
 
-
 /*-----------------------------------------------------
-leftSideDiv
+SideDiv
 -----------------------------------------------------*/
-#leftSideDiv{
+.sideDiv{
 	position:fixed;
 	top:0px;
-	left:0px;
 	overflow-x: hidden;
+	/*font-size: 2rem;*/
 }
+#leftSideDiv{
+	left:0px;
+}
+#rightSideDiv{
+	right:0px;
+}
+.buttonIcon:before{
+	margin-left: 0;
+}
+
+
 /*-----------------------------------------------------
 menuDiv
 -----------------------------------------------------*/
 #menuDiv{
+	position: fixed;
 	background-color: #eee;
 	line-height: 4.0rem;
 	padding:10px;
 	display: none;
-¥}
-
-/*-----------------------------------------------------
-rightSideDiv
------------------------------------------------------*/
-#rightSideDiv{
-	position:fixed;
+	height: 100%;
 	top:0px;
-	right:0px;
-	text-align: left;
-	overflow-x: hidden;
-	padding: 8px;
+	left:0px;
+	min-width: 200px;
 }
+
 /*-----------------------------------------------------
 switchDiv
 -----------------------------------------------------*/
@@ -65,6 +69,10 @@ switchDiv
 	min-width: 10rem;
 	vertical-align: middle;
 }
+#switchDiv select option{
+	min-height: 2rem;
+}
+
 #switchDiv button{
 	vertical-align: middle;
 }
@@ -73,9 +81,8 @@ tantouDiv
 -----------------------------------------------------*/
 #tantouDiv{
 	/*position:fixed;*/
-	width:140px;
-	max-height: 80%;
-	line-height: 28px;
+	max-height: 60%;
+	line-height: 2rem;
 	overflow-x: hidden;
 	overflow-y: scroll;
 	display:none;
@@ -168,6 +175,36 @@ slideDiv
 	width:70px;
 	float:right;
 	background: #dfd;
+}
+
+/*-----------------------------------------------------
+dialog
+-----------------------------------------------------*/
+.dialog{
+	position: fixed;
+	padding: 20px 10px 60px;
+	top: 1rem;
+	left: 1rem;
+	right: 1rem;
+	width: calc(100% - 2rem);
+	height: calc(100% - 10rem);
+	margin: 1px;
+	box-sizing: border-box;
+
+	/*height: 200px;*/
+	text-align: center;
+	line-height:2rem;
+	/*background: #ccc;*/
+	border-radius: 15px;
+	display: none;
+}
+
+.closeButton{
+	width: 2.1rem;
+	margin-top: 0px;
+	margin-left: auto;
+	font-size: 2.1rem;
+	line-height: 2.1rem;
 }
 
 /*-----------------------------------------------------
@@ -313,34 +350,4 @@ general class
 	color:blue;
 	font-weight:bold;
 	opacity: .5;
-}
-
-.closeButton{
-	width: 1.8rem;
-	margin-top: 0px;
-	margin-left: auto;
-	font-size: 1.8rem;
-	line-height: 1.8rem;
-}
-.buttonIcon{
-	width:1.8rem;
-	height:1.8rem;
-}
-.buttonIcon:before{
-	margin-left: 0;
-}
-
-
-.dialog{
-	position: fixed;
-	padding: 20px 10px 60px;
-	top: 1rem;
-	left: 140px;
-	width: calc(100% - 200px);
-	/*height: 200px;*/
-	text-align: center;
-	line-height:3rem;
-	/*background: #ccc;*/
-	border-radius: 15px;
-	display: none;
 }

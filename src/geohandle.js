@@ -227,25 +227,30 @@ GeoHandle.getGcrAddressText = function(gcResult){
 		// 挿入のあれこれ
 		//マンション名はなにもしない
 		if (cmpnt.types[0] =='premise'){
+		
 		//一つ目はとりあえず入れる
 		}else if (stradr.length == 0){
 			stradr = lname;
+			
 		//数字だけなら間にハイフンをはさんで追加する
 		}else if (lname.match(/[^0-9０-９]/)==null){
 				stradr = lname + '－' + stradr;
+				
 		//それ以外は普通に追加する
 		}else {
 				stradr = lname + stradr;
 		}
-
+		
+		// ループ終了処理
 		// 番地以外のものを挿入したらループを抜ける
 		if (stradr.length > 0 ){
 			// 番地要素
 			if (!cmpnt.types.some(findSubLocatity2_9)){
 				break;
 			}
-			// sublocality_level_2_9に当てはまればtrueを返す
+			// sublocality_level_2_9に当てはまればtrueを返す; premiseもtrueとして返す
 			function findSubLocatity2_9(e){
+				if (e == 'premise') return true;
 				return e.match(/sublocality_level_[2-9]/);　// sublocalityの1は町名、2-9は番地など（個人調べ）
 			}
 		}
